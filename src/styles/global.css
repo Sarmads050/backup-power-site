@@ -124,3 +124,7 @@ html { scroll-behavior: smooth; }
 .answer-box p:last-child { margin: 0; }
 .cta-box { background: var(--surface); border: 2px solid var(--brand); border-radius: var(--radius); padding: 18px; margin: 28px 0; }
 .cta-box p { margin: 0 0 10px; }
+
+/* Tables inside guides scroll sideways on small phones instead of widening the page */
+.prose table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll table, .card table { display: table; }

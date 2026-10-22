@@ -54,6 +54,18 @@ Har kaam ke baad isay update kiya jata hai.
 - **5 guides:** refrigerator, watts vs watt-hours, LiFePO4 vs lithium-ion, sump pump, space heater.
 - Home page par "Popular guides".
 
+### 2026-10-22 (teesra hissa): Keyword research + 6 cluster guides
+
+**Keyword research (free, bina paid tool):** Google Autocomplete se pata chala ke Amreeka mein main sawal hai **"what size power station do I need"**, aur log isay in cheezon ke saath search karte hain: refrigerator, camping, 12V refrigerator, CPAP, TV, Starlink, diesel heater, microwave. Isi par **topic cluster** banaya.
+- Muqabla: is sawal par upar zyada tar brand blogs (Anker, Oukitel, OUPES) hain jo apni product bechte hain → neutral calculator hamara faida.
+- Domain: Google (John Mueller, 2022): domain mein keyword se ranking bonus nahi. **BackupWatts** jaisa brand naam theek hai.
+- Asli search numbers domain ke baad **Google Search Console** se aayenge.
+
+**6 nayi guides:** camping, TV, Starlink (Standard + Mini), microwave, diesel heater (12V port ki 10 A limit vs ~20 A start-up), 12V fridge.
+**Calculator data:** naya "Camping, RV & van" group (12V fridge, Starlink Mini, diesel heater, camp lights, fan, 32" TV) + Starlink Standard → ab 35 appliances.
+**Mobile fix:** guides ki tables chhote phone par page ko chaura nahi karti (sideways scroll).
+**Total:** 25 pages, SEO check 0 errors / 0 warnings.
+
 ## Agla kaam (Next)
 
 1. Auto-draft system (GitHub Actions + AI API): roz/hafte 1 guide ka draft `draft: true` ke saath → user approve kare → live. API key user dega.

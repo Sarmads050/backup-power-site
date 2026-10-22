@@ -6,7 +6,7 @@ import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import Related from '../../../components/Related.astro';
 
 const title = 'Appliance Wattage Chart: Running & Starting Watts';
-const description = 'Appliance wattage chart with running watts, starting watts and daily energy use for 28 household appliances, to size a power station or generator.';
+const description = 'Appliance wattage chart with running watts, starting watts and daily energy use for 35 home, camping and RV appliances, to size a power station or generator.';
 
 const fmt = (n) => Math.round(n).toLocaleString('en-US');
 const dailyWh = (it) => it.running * (it.qty ?? 1) * it.hours * it.duty;

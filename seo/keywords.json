@@ -3,55 +3,154 @@
   "pages": {
     "/": {
       "primary": "backup power",
-      "secondary": ["power station calculator", "solar generator calculator", "power outage backup"]
+      "secondary": [
+        "power station calculator",
+        "solar generator calculator",
+        "power outage backup"
+      ]
     },
     "/calculators/": {
       "primary": "backup power calculators",
-      "secondary": ["power station calculators", "solar calculators"]
+      "secondary": [
+        "power station calculators",
+        "solar calculators"
+      ]
     },
     "/calculators/power-station-size/": {
       "primary": "power station size calculator",
-      "secondary": ["what size power station do I need", "solar generator size calculator", "how many watt-hours do I need", "surge watts"]
+      "secondary": [
+        "what size power station do I need",
+        "solar generator size calculator",
+        "how many watt-hours do I need",
+        "surge watts"
+      ]
     },
     "/calculators/solar-charging-time/": {
       "primary": "solar charging time calculator",
-      "secondary": ["how long to charge a power station with solar", "peak sun hours", "solar panel size for power station"]
+      "secondary": [
+        "how long to charge a power station with solar",
+        "peak sun hours",
+        "solar panel size for power station"
+      ]
     },
     "/calculators/appliance-wattage/": {
       "primary": "appliance wattage chart",
-      "secondary": ["running and starting watts", "how many watts does a refrigerator use", "household appliance watts"]
+      "secondary": [
+        "running and starting watts",
+        "how many watts does a refrigerator use",
+        "household appliance watts"
+      ]
     },
     "/calculators/generator-vs-power-station-cost/": {
       "primary": "generator vs power station",
-      "secondary": ["power station vs generator cost", "cost to run a generator per hour", "is a power station cheaper than a generator"]
+      "secondary": [
+        "power station vs generator cost",
+        "cost to run a generator per hour",
+        "is a power station cheaper than a generator"
+      ]
     },
     "/calculators/cpap-battery-runtime/": {
       "primary": "CPAP battery calculator",
-      "secondary": ["how long will a power station run a CPAP", "CPAP power consumption", "CPAP battery backup"]
+      "secondary": [
+        "how long will a power station run a CPAP",
+        "CPAP power consumption",
+        "CPAP battery backup"
+      ]
     },
     "/guides/": {
       "primary": "backup power guides",
-      "secondary": ["power station guides", "power outage guides"]
+      "secondary": [
+        "power station guides",
+        "power outage guides"
+      ]
     },
     "/guides/power-station-for-refrigerator/": {
       "primary": "power station for a refrigerator",
-      "secondary": ["what size power station to run a refrigerator", "how long will a power station run a fridge", "refrigerator starting watts"]
+      "secondary": [
+        "what size power station to run a refrigerator",
+        "how long will a power station run a fridge",
+        "refrigerator starting watts"
+      ]
     },
     "/guides/watts-vs-watt-hours/": {
       "primary": "watts vs watt-hours",
-      "secondary": ["what does Wh mean on a power station", "W vs Wh", "how to read power station specs"]
+      "secondary": [
+        "what does Wh mean on a power station",
+        "W vs Wh",
+        "how to read power station specs"
+      ]
     },
     "/guides/lifepo4-vs-lithium-ion-power-station/": {
       "primary": "LiFePO4 vs lithium-ion power station",
-      "secondary": ["LiFePO4 vs NMC", "power station battery types", "power station charge cycles"]
+      "secondary": [
+        "LiFePO4 vs NMC",
+        "power station battery types",
+        "power station charge cycles"
+      ]
     },
     "/guides/power-station-for-sump-pump/": {
       "primary": "power station for a sump pump",
-      "secondary": ["can a power station run a sump pump", "sump pump battery backup", "sump pump starting watts"]
+      "secondary": [
+        "can a power station run a sump pump",
+        "sump pump battery backup",
+        "sump pump starting watts"
+      ]
     },
     "/guides/power-station-space-heater/": {
       "primary": "power station run a space heater",
-      "secondary": ["can a portable power station run a space heater", "space heater watts", "heat during power outage"]
+      "secondary": [
+        "can a portable power station run a space heater",
+        "space heater watts",
+        "heat during power outage"
+      ]
+    },
+    "/guides/power-station-for-camping/": {
+      "primary": "power station for camping",
+      "secondary": [
+        "what size power station for camping",
+        "camping power station size",
+        "solar generator for camping"
+      ]
+    },
+    "/guides/power-station-for-tv/": {
+      "primary": "power station to run a TV",
+      "secondary": [
+        "what size power station do I need to run a TV",
+        "how many watts does a TV use",
+        "how long will a power station run a TV"
+      ]
+    },
+    "/guides/power-station-for-starlink/": {
+      "primary": "power station for Starlink",
+      "secondary": [
+        "what size power station to run Starlink",
+        "Starlink power consumption",
+        "Starlink Mini battery"
+      ]
+    },
+    "/guides/power-station-for-microwave/": {
+      "primary": "power station to run a microwave",
+      "secondary": [
+        "what size power station do I need to run a microwave",
+        "microwave watts",
+        "microwave on battery"
+      ]
+    },
+    "/guides/power-station-for-diesel-heater/": {
+      "primary": "power station for a diesel heater",
+      "secondary": [
+        "what size power station for diesel heater",
+        "diesel heater power draw",
+        "diesel heater startup amps"
+      ]
+    },
+    "/guides/power-station-for-12v-fridge/": {
+      "primary": "power station for a 12V fridge",
+      "secondary": [
+        "what size power station for a 12V refrigerator",
+        "12V fridge power consumption",
+        "12V fridge battery"
+      ]
     }
   }
 }
