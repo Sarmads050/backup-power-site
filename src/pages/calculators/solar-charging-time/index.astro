@@ -1,0 +1,94 @@
+---
+import Base from '../../../layouts/Base.astro';
+import SolarChargeCalculator from '../../../components/SolarChargeCalculator.astro';
+import { SITE, url } from '../../../lib/site.js';
+
+const title = 'Solar Charging Time Calculator for Power Stations';
+const description = 'Find out how many hours of sun your solar panels need to recharge a portable power station or solar generator — and what panel size refills it in one day.';
+
+const faqs = [
+  {
+    q: 'How long does a 100 W solar panel take to charge a 1,000 Wh power station?',
+    a: 'In real conditions a 100 W panel usually delivers around 75 W. To add 1,000 Wh after about 10% charging loss you need roughly 1,110 Wh from the panel, or about 15 hours of full sun — three to four sunny days in most of the US. Two or four panels cut that time proportionally.',
+  },
+  {
+    q: 'What are peak sun hours?',
+    a: 'Peak sun hours are the number of hours in a day that add up to full-strength sunlight. A day with 10 hours of daylight might only give 4 or 5 peak sun hours, because morning and evening sun is weak. Southern and desert states get the most; the Pacific Northwest and winter months the least.',
+  },
+  {
+    q: 'Why doesn’t my 200 W panel produce 200 W?',
+    a: 'Panel ratings are measured in ideal lab conditions. Heat, the angle of the sun, dust, shade and cable losses mean most panels deliver about 70–80% of their rating, and less on cloudy days. The calculator uses 75%.',
+  },
+  {
+    q: 'What does "max solar input" mean?',
+    a: 'Every power station has a limit on how much solar power its built-in charger can accept, listed in watts (and a voltage range). Connecting more panel watts than that limit doesn’t charge any faster — the extra power is simply not used.',
+  },
+  {
+    q: 'Can I charge a power station on a cloudy day?',
+    a: 'Yes, but slowly. Heavy cloud can cut output to 10–25% of normal. Choose the "cloudy / winter day" option to see a realistic worst case.',
+  },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Solar Charging Time Calculator',
+    url: new URL(url('/calculators/solar-charging-time/'), Astro.site).href,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+<Base title={title} description={description} schema={schema}>
+  <div class="wrap">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href={url('/')}>Home</a> › <a href={url('/calculators/')}>Calculators</a> › Solar Charging Time
+    </nav>
+    <p class="eyebrow" style="margin-top:16px">Calculator</p>
+    <h1>Solar Charging Time Calculator</h1>
+    <p class="lede">How long will your solar panels take to refill your power station? Enter your battery size, your panels and where you live.</p>
+
+    <SolarChargeCalculator />
+
+    <article class="prose">
+      <h2>How the calculation works</h2>
+      <ol>
+        <li><strong>Energy to add</strong> = battery capacity × (target % − current %). A 1,000 Wh battery going from 20% to 100% needs 800 Wh.</li>
+        <li>About 10% is lost while charging, so the panels must supply a bit more: 800 ÷ 0.9 ≈ 890 Wh.</li>
+        <li><strong>Real panel output</strong> = rated watts × 0.75, capped at your power station's maximum solar input.</li>
+        <li><strong>Sun hours needed</strong> = energy from panels ÷ real panel output. Divide by your peak sun hours to get days.</li>
+      </ol>
+
+      <h2>Typical charging times</h2>
+      <p>Charging a power station from 20% to 100% in 4.5 peak sun hours a day (a typical Midwest average):</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Battery</th><th>100 W panel</th><th>200 W</th><th>400 W</th></tr></thead>
+          <tbody>
+            <tr><th>500 Wh</th><td>5.9 h (1.3 days)</td><td>3.0 h</td><td>1.5 h</td></tr>
+            <tr><th>1,000 Wh</th><td>11.9 h (2.6 days)</td><td>5.9 h (1.3 days)</td><td>3.0 h</td></tr>
+            <tr><th>2,000 Wh</th><td>23.7 h (5.3 days)</td><td>11.9 h (2.6 days)</td><td>5.9 h (1.3 days)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Times assume the power station accepts all the panel power. Check its maximum solar input before buying more panels.</p>
+
+      <div class="note">
+        <strong>Sizing a power station too?</strong> Use the <a href={url('/calculators/power-station-size/')}>Power Station Size Calculator</a> first — it tells you how many watt-hours you need, and links back here with your number filled in.
+      </div>
+
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (<details><summary>{f.q}</summary><p>{f.a}</p></details>))}
+
+      <p style="color:var(--ink-2);font-size:.9rem;margin-top:24px">Last reviewed October 2026 · {SITE.name}</p>
+    </article>
+  </div>
+</Base>

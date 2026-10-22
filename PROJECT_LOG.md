@@ -24,16 +24,20 @@ Har kaam ke baad isay update kiya jata hai.
   - FAQ (FAQPage schema), "how it works", example, safety notes
 - **Zaroori pages:** About, Contact, Privacy Policy (AdSense-ready), Affiliate Disclosure, Terms, 404
 - **Auto-deploy:** `main` branch par push → GitHub Actions build → GitHub Pages
+- **Live preview:** https://sarmads050.github.io/backup-power-site/ (2026-10-22)
+- **Solar Charging Time Calculator** (`/calculators/solar-charging-time/`) — 2026-10-22
+  - Battery Wh, charge %, max solar input, panel watts (100/200/400/800 shortcuts), 7 US sun regions
+  - Batata hai: kitne ghante/din, solar se roz kitni energy, 1 din mein charge ke liye kitne panel watts
+  - Power Station calculator ka result `?wh=` ke zariye khud bhar jata hai
+- **Appliance Wattage Chart** (`/calculators/appliance-wattage/`) — `appliances.json` se khud banta hai (data badlo → chart badle)
 
 ## Agla kaam (Next)
 
-1. Solar Charging Time Calculator
-2. Appliance Wattage Chart page
-3. Generator vs Power Station Cost Calculator
-4. CPAP Battery Runtime Calculator
-5. Pehle 5 guides (drafts automation se, aap approve karenge)
-6. Auto-draft system (GitHub Actions + AI API) — API key aap denge
-7. Domain ke baad: Search Console, Cloudflare Pages, contact email, AdSense apply
+1. Generator vs Power Station Cost Calculator
+2. CPAP Battery Runtime Calculator
+3. Pehle 5 guides (drafts automation se, aap approve karenge)
+4. Auto-draft system (GitHub Actions + AI API) — API key aap denge
+5. Domain ke baad: Search Console, Cloudflare Pages, contact email, AdSense apply
 
 ## Domain lene ke baad kya badalna hai
 

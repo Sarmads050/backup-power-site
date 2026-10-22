@@ -10,7 +10,7 @@ export const TOOLS = [
     slug: 'solar-charging-time',
     title: 'Solar Charging Time Calculator',
     blurb: 'How long your panels take to refill a power station, by panel size and sun hours.',
-    live: false,
+    live: true,
   },
   {
     slug: 'generator-vs-power-station-cost',
@@ -28,6 +28,6 @@ export const TOOLS = [
     slug: 'appliance-wattage',
     title: 'Appliance Wattage Chart',
     blurb: 'Running and starting watts for common household appliances.',
-    live: false,
+    live: true,
   },
 ];

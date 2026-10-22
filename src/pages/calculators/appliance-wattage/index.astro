@@ -1,0 +1,82 @@
+---
+import Base from '../../../layouts/Base.astro';
+import data from '../../../data/appliances.json';
+import { SITE, url } from '../../../lib/site.js';
+
+const title = 'Appliance Wattage Chart: Running & Starting Watts';
+const description = 'Typical running watts, starting (surge) watts and daily energy use for common household appliances — fridges, pumps, AC, CPAP and more — for sizing a power station or generator.';
+
+const fmt = (n) => Math.round(n).toLocaleString('en-US');
+const dailyWh = (it) => it.running * (it.qty ?? 1) * it.hours * it.duty;
+
+const faqs = [
+  {
+    q: 'What is the difference between running watts and starting watts?',
+    a: 'Running watts are what an appliance uses while it is on. Starting (surge) watts are the short spike — often two to three times higher — that motors and compressors need for a second or two when they switch on. A power station or generator must handle both.',
+  },
+  {
+    q: 'How do I find the exact wattage of my appliance?',
+    a: 'Look for a label on the back or bottom, or in the manual. If it lists watts (W), use that. If it lists amps (A), multiply by 120 for US household voltage. For fridges and freezers, the yellow EnergyGuide label lists kWh per year: divide by 365 and multiply by 1,000 to get watt-hours per day. A plug-in watt meter gives the most accurate reading.',
+  },
+  {
+    q: 'Why does a fridge use less energy than its watts × 24 hours?',
+    a: 'Its compressor cycles on and off to keep the temperature steady, so it only draws full power part of the time — often around a third of the day. That is why this chart shows daily energy separately.',
+  },
+];
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
+---
+<Base title={title} description={description} schema={schema}>
+  <div class="wrap">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href={url('/')}>Home</a> › <a href={url('/calculators/')}>Calculators</a> › Appliance Wattage Chart
+    </nav>
+    <p class="eyebrow" style="margin-top:16px">Reference chart</p>
+    <h1>Appliance Wattage Chart</h1>
+    <p class="lede">Typical running and starting watts for {data.categories.reduce((n, c) => n + c.items.length, 0)} common household appliances, plus how much energy each uses in a typical day.</p>
+
+    <p class="note">These are typical US (120 V) figures. Your appliance's label is always more accurate — and you can enter your own numbers in the <a href={url('/calculators/power-station-size/')}>Power Station Size Calculator</a>.</p>
+
+    {data.categories.map((cat) => (
+      <section>
+        <h2>{cat.label}</h2>
+        <div class="table-scroll card" style="padding:4px 12px">
+          <table>
+            <thead>
+              <tr><th>Appliance</th><th>Running watts</th><th>Starting watts</th><th>Typical use</th><th>Energy per day</th></tr>
+            </thead>
+            <tbody>
+              {cat.items.map((it) => (
+                <tr>
+                  <td>{it.qty && it.qty > 1 ? `${it.name} (×${it.qty})` : it.name}</td>
+                  <td>{fmt(it.running)} W</td>
+                  <td>{it.surge > it.running ? `${fmt(it.surge)} W` : '—'}</td>
+                  <td>{it.hours >= 1 ? `${it.hours} h/day` : `${Math.round(it.hours * 60)} min/day`}{it.duty < 1 ? ', cycles on/off' : ''}</td>
+                  <td>{fmt(dailyWh(it))} Wh</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+
+    <article class="prose">
+      <h2>How to use this chart</h2>
+      <ol>
+        <li>Add up the <strong>running watts</strong> of everything you want on at the same time. Your power station's continuous output must be higher.</li>
+        <li>Add the <strong>biggest single starting-watts jump</strong> on top. Your power station's surge rating must cover it.</li>
+        <li>Add up the <strong>energy per day</strong> column for everything you'll use, multiply by the days you need, and allow for about 15% inverter loss. That is the battery capacity (Wh) you need.</li>
+      </ol>
+      <p>Or let the <a href={url('/calculators/power-station-size/')}>calculator</a> do all three for you.</p>
+
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (<details><summary>{f.q}</summary><p>{f.a}</p></details>))}
+      <p style="color:var(--ink-2);font-size:.9rem;margin-top:24px">Last reviewed October 2026 · {SITE.name}</p>
+    </article>
+  </div>
+</Base>

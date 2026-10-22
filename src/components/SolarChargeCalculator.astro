@@ -1,0 +1,165 @@
+---
+import { SUN_REGIONS } from '../lib/solarMath.js';
+---
+<section class="calc" id="calculator" aria-label="Solar charging time calculator">
+  <div class="calc-grid">
+    <div class="calc-inputs">
+      <fieldset class="card fs">
+        <legend>Your power station</legend>
+        <label class="opt">
+          <span>Battery capacity (Wh)</span>
+          <input type="number" id="battery-wh" min="100" max="50000" step="100" value="1000" inputmode="numeric" />
+          <small>Printed on the box or spec sheet, e.g. "1,024 Wh".</small>
+        </label>
+        <div class="two">
+          <label class="opt">
+            <span>Charge now (%)</span>
+            <input type="number" id="from-pct" min="0" max="100" step="5" value="20" inputmode="numeric" />
+          </label>
+          <label class="opt">
+            <span>Charge to (%)</span>
+            <input type="number" id="to-pct" min="0" max="100" step="5" value="100" inputmode="numeric" />
+          </label>
+        </div>
+        <label class="opt">
+          <span>Max solar input (W) <em>optional</em></span>
+          <input type="number" id="max-input" min="0" max="10000" step="50" placeholder="e.g. 500" inputmode="numeric" />
+          <small>The most solar power the unit accepts. Listed as "solar input" in the specs.</small>
+        </label>
+      </fieldset>
+
+      <fieldset class="card fs">
+        <legend>Your solar panels</legend>
+        <div class="presets" role="group" aria-label="Common panel sizes">
+          {[100, 200, 400, 800].map((w) => <button type="button" class="chip" data-panel={w}>{w} W</button>)}
+        </div>
+        <label class="opt">
+          <span>Total panel watts</span>
+          <input type="number" id="panel-w" min="0" max="20000" step="10" value="200" inputmode="numeric" />
+          <small>Add up the watt rating of every panel you'll connect.</small>
+        </label>
+      </fieldset>
+
+      <fieldset class="card fs">
+        <legend>Your sunshine</legend>
+        <label class="opt">
+          <span>Where are you?</span>
+          <select id="region">
+            {SUN_REGIONS.map((r) => <option value={r.hours} selected={r.id === 'midwest'}>{r.label} — about {r.hours} h</option>)}
+          </select>
+        </label>
+        <label class="opt">
+          <span>Peak sun hours per day</span>
+          <input type="number" id="sun-hours" min="0.5" max="12" step="0.5" value="4.5" inputmode="decimal" />
+          <small>Hours of full-strength sun. These are rough yearly averages — winter days can be half as much.</small>
+        </label>
+      </fieldset>
+    </div>
+
+    <aside class="calc-results" aria-live="polite">
+      <div class="results card">
+        <p class="eyebrow">Full charge from solar in</p>
+        <div class="big" id="r-time">—</div>
+        <p class="big-label" id="r-time-sub">of good sunshine</p>
+        <div class="class-box" id="r-days"></div>
+        <dl class="specs">
+          <div><dt>Energy to add</dt><dd id="r-energy">—</dd></div>
+          <div><dt>Real panel output</dt><dd id="r-real">—</dd></div>
+          <div><dt>Solar energy per day</dt><dd id="r-perday">—</dd></div>
+          <div><dt>Panels to refill in 1 day</dt><dd id="r-oneday">—</dd></div>
+        </dl>
+        <p class="warn-line" id="r-warn" hidden></p>
+        <p class="fine">Assumes panels give about 75% of their rated watts in real sun (heat, angle, dust) and about 10% is lost while charging the battery.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  import { solarCharge } from '../lib/solarMath.js';
+  const $ = (s) => document.querySelector(s);
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+
+  function hoursText(h) {
+    if (!isFinite(h)) return '—';
+    if (h < 1) return `${Math.max(1, Math.round(h * 60))} min`;
+    const whole = Math.floor(h), mins = Math.round((h - whole) * 60);
+    return mins ? `${whole} h ${mins} min` : `${whole} h`;
+  }
+
+  // Prefill battery size when arriving from the Power Station Size Calculator.
+  const qWh = new URLSearchParams(location.search).get('wh');
+  if (qWh && Number(qWh) > 0) $('#battery-wh').value = Math.round(Number(qWh));
+
+  function update() {
+    const r = solarCharge({
+      batteryWh: $('#battery-wh').value,
+      fromPct: $('#from-pct').value,
+      toPct: $('#to-pct').value,
+      panelW: $('#panel-w').value,
+      sunHours: $('#sun-hours').value,
+      maxInputW: $('#max-input').value,
+    });
+
+    if (!r.energyToAdd || !isFinite(r.sunHoursNeeded)) {
+      $('#r-time').textContent = '—';
+      $('#r-days').innerHTML = '<p>Enter your battery size, charge levels and panel watts.</p>';
+      ['#r-energy', '#r-real', '#r-perday', '#r-oneday'].forEach((s) => ($(s).textContent = '—'));
+      $('#r-warn').hidden = true;
+      return;
+    }
+
+    $('#r-time').textContent = hoursText(r.sunHoursNeeded);
+    const d = r.days;
+    $('#r-days').innerHTML = d <= 1
+      ? `<strong>Done in one sunny day.</strong><p>That's about ${Math.round(d * 100)}% of a day's sun where you are.</p>`
+      : `<strong>About ${d.toFixed(1)} sunny days.</strong><p>Your panels refill roughly ${fmt(r.whPerDay)} Wh a day. Add panels to finish faster.</p>`;
+
+    $('#r-energy').textContent = `${fmt(r.energyToAdd)} Wh`;
+    $('#r-real').textContent = `${fmt(r.effectiveW)} W`;
+    $('#r-perday').textContent = `${fmt(r.whPerDay)} Wh`;
+    $('#r-oneday').textContent = isFinite(r.panelWForOneDay) ? `${fmt(r.panelWForOneDay)} W` : '—';
+
+    const warn = $('#r-warn');
+    const msgs = [];
+    if (r.capped) msgs.push(`Your panels can make about ${fmt(r.realPanelW)} W, but your power station only accepts ${fmt(r.effectiveW)} W — the extra is wasted.`);
+    if (r.oneDayExceedsInput) msgs.push(`Refilling in one day would need more solar input than your power station accepts, so it will take at least ${hoursText(r.sunHoursNeeded)} of sun.`);
+    warn.hidden = !msgs.length;
+    warn.textContent = msgs.join(' ');
+  }
+
+  document.querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => {
+    $('#panel-w').value = b.dataset.panel; update();
+  }));
+  $('#region').addEventListener('change', () => { $('#sun-hours').value = $('#region').value; update(); });
+  document.addEventListener('input', (e) => { if (e.target.closest('#calculator')) update(); });
+  update();
+</script>
+
+<style>
+  .calc { margin: 24px 0 8px; }
+  .calc-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } .calc-results { order: -1; } }
+  .calc-results { position: sticky; top: 16px; }
+  @media (max-width: 900px) { .calc-results { position: static; } }
+  .fs { margin: 0 0 16px; display: grid; gap: 14px; }
+  .fs legend { font-family: var(--font-head); font-weight: 700; padding: 0 6px; }
+  .opt { display: grid; gap: 6px; font-weight: 600; }
+  .opt em { font-weight: 400; color: var(--ink-2); font-style: normal; font-size: .9rem; }
+  .opt small { font-weight: 400; color: var(--ink-2); font-size: .88rem; }
+  .opt input, .opt select { width: 100%; font: inherit; font-size: 1rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font: 600 .95rem var(--font-body); padding: 6px 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); cursor: pointer; }
+  .chip:hover { border-color: var(--brand); }
+  .results { border-top: 5px solid var(--accent); }
+  .big { font-family: var(--font-head); font-size: 2.6rem; font-weight: 700; line-height: 1.05; margin-top: 8px; }
+  .big-label { color: var(--ink-2); margin: 4px 0 14px; }
+  .class-box { background: var(--accent-soft); border-radius: 10px; padding: 12px; font-size: .95rem; }
+  .class-box p { margin: 6px 0 0; }
+  .specs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .specs dt { font-size: .82rem; color: var(--ink-2); }
+  .specs dd { margin: 0; font-weight: 700; font-size: 1.15rem; }
+  .warn-line { font-size: .92rem; border-left: 4px solid var(--warn); background: var(--surface-2); padding: 10px; border-radius: 8px; }
+  .fine { font-size: .85rem; color: var(--ink-2); margin: 12px 0 0; }
+</style>
