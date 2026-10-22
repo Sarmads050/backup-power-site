@@ -106,6 +106,11 @@ import data from '../data/appliances.json';
   </div>
 </section>
 
+<a class="mobile-bar" id="mobile-bar" href="#calculator" hidden>
+  <span>You need about <strong id="mb-capacity">—</strong></span>
+  <span class="mb-go">See result ↑</span>
+</a>
+
 <template id="custom-row-tpl">
   <div class="row custom" data-row data-surge="0" data-duty="1">
     <input type="checkbox" class="use" checked aria-label="Include this device" />
@@ -155,6 +160,7 @@ import data from '../data/appliances.json';
     }
 
     $('#r-capacity').textContent = `${fmt(r.capacityWh)} Wh`;
+    $('#mb-capacity').textContent = `${fmt(r.capacityWh)} Wh`;
     $('#r-output').textContent = `${fmt(r.outputW)} W`;
     $('#r-surge').textContent = `${fmt(r.surgeW)} W`;
     $('#r-daily').textContent = `${fmt(r.dailyWh)} Wh`;
@@ -186,6 +192,18 @@ import data from '../data/appliances.json';
     $('.name-input', node).focus();
     update();
   });
+
+  // On phones the result card sits above the list; show a small bar at the
+  // bottom with the live answer while the user scrolls through appliances.
+  const bar = $('#mobile-bar');
+  const resultsCard = $('.calc-results');
+  const calcSection = $('#calculator');
+  let resultsVisible = true, calcVisible = true;
+  const syncBar = () => { bar.hidden = !(window.innerWidth <= 900 && !resultsVisible && calcVisible); };
+  new IntersectionObserver(([e]) => { resultsVisible = e.isIntersecting; syncBar(); }).observe(resultsCard);
+  new IntersectionObserver(([e]) => { calcVisible = e.isIntersecting; syncBar(); }).observe(calcSection);
+  bar.addEventListener('click', (e) => { e.preventDefault(); resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+  window.addEventListener('resize', syncBar);
 
   document.addEventListener('input', (e) => { if (e.target.closest('#calculator')) update(); });
   document.addEventListener('change', (e) => { if (e.target.closest('#calculator')) update(); });
@@ -246,5 +264,9 @@ import data from '../data/appliances.json';
   .runtime th, .runtime td { padding: 6px 4px; }
   .runtime tr.ok td { color: var(--good); font-weight: 700; }
   .fine { font-size: .85rem; color: var(--ink-2); margin: 12px 0 0; }
+  .mobile-bar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 50; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--brand); color: var(--brand-ink); padding: 14px 16px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.25); text-decoration: none; font-size: 1rem; }
+  .mobile-bar[hidden] { display: none; }
+  .mobile-bar strong { font-size: 1.15rem; }
+  .mb-go { font-weight: 700; white-space: nowrap; }
   .next { width: 100%; justify-content: center; margin-top: 14px; font-size: .95rem; }
 </style>

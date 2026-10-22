@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { url } from '../../lib/site.js';
+
+const guides = (await getCollection('guides', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.updated - a.data.updated);
+---
+<Base title="Backup Power Guides" description="Plain-English backup power guides: what size power station runs a fridge, sump pump or heater, and how to read battery specs before you buy.">
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'Guides' }]} />
+    <h1 style="margin-top:20px">Backup power guides</h1>
+    <p class="lede">Our backup power guides answer one real question each — with numbers, not sales talk — and link to a calculator so you can check the maths for your own home.</p>
+    <div class="grid">
+      {guides.map((g) => (
+        <a class="card tool-card" href={url(`/guides/${g.id}/`)}>
+          <h2 style="font-size:1.15rem;margin:0 0 .4em">{g.data.title}</h2>
+          <p>{g.data.summary}</p>
+          <span style="font-weight:700;color:var(--brand)">Read guide →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</Base>

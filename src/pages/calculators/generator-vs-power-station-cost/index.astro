@@ -1,0 +1,96 @@
+---
+import Base from '../../../layouts/Base.astro';
+import CostCalculator from '../../../components/CostCalculator.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Related from '../../../components/Related.astro';
+import { SITE, url } from '../../../lib/site.js';
+import { DEFAULTS } from '../../../lib/costMath.js';
+
+const title = 'Generator vs Power Station: Cost Calculator';
+const description = 'Generator vs power station cost calculator: compare the price, gas, upkeep and electricity of each over 5 years for the way you actually use backup power.';
+
+const faqs = [
+  {
+    q: 'Is a power station cheaper than a generator?',
+    a: 'Usually not up front: a gas inverter generator often costs less to buy than a power station with similar output. But a power station costs only a few cents an hour to recharge from the grid and needs almost no upkeep, so if you use backup power a lot, or recharge with solar, the gap shrinks over time. The calculator shows where the line falls for your own numbers.',
+  },
+  {
+    q: 'How much does it cost to run a generator per hour?',
+    a: `It depends mostly on load and gas prices. A typical 3,500 W inverter generator running a fridge, lights and Wi-Fi (around 500 W) burns roughly 0.1–0.2 gallons an hour. At about $${DEFAULTS.gasPrice.toFixed(2)} a gallon that is around 50–85 cents an hour in fuel, plus oil changes and stabilizer.`,
+  },
+  {
+    q: 'How much does it cost to recharge a power station?',
+    a: `Very little. Refilling a 2,000 Wh power station from the grid uses about 2.4 kWh after charging losses. At around ${Math.round(DEFAULTS.electricityPrice * 100)}¢ per kWh that is roughly 40–45 cents — and nothing at all if you charge it with solar panels.`,
+  },
+  {
+    q: 'Which is better for a long power outage?',
+    a: 'For outages lasting several days with heavy loads, a generator is hard to beat because you can keep adding fuel — as long as you can safely store and buy it. A power station needs a large battery, extra battery packs or solar panels to keep up over multiple days. Many households use both.',
+  },
+  {
+    q: 'Can I run a generator indoors or in the garage?',
+    a: 'No. Gas generators produce carbon monoxide, which can kill within minutes. The US Consumer Product Safety Commission advises running them outdoors only, at least 20 feet from the home, with the exhaust pointed away from windows and doors. Battery power stations produce no fumes and can be used indoors.',
+  },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Generator vs Power Station Cost Calculator',
+    url: new URL(url('/calculators/generator-vs-power-station-cost/'), Astro.site).href,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+<Base title={title} description={description} schema={schema}>
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'Calculators', href: '/calculators/' }, { name: 'Generator vs Power Station' }]} />
+    <p class="eyebrow" style="margin-top:16px">Calculator</p>
+    <h1>Generator vs Power Station Cost Calculator</h1>
+    <p class="lede">Generator vs power station — which actually costs less for you? Enter how often you lose power and what you run, and compare the full cost over the years: purchase price, gas, upkeep and electricity.</p>
+
+    <CostCalculator />
+
+    <article class="prose">
+      <h2>How the costs are worked out</h2>
+      <ul>
+        <li><strong>Generator:</strong> purchase price + (hours of use × gallons per hour × gas price) + yearly upkeep. Fuel use is estimated for a typical 3,500 W inverter generator at your load; type in your own model's figure if you know it.</li>
+        <li><strong>Power station:</strong> purchase price + (energy used ÷ 0.85 charging efficiency × your electricity price). Charging from solar would make the running cost zero.</li>
+        <li>Neither side includes financing, sales tax, extension cords or a transfer switch.</li>
+      </ul>
+
+      <h2>Cost isn't the only difference</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th></th><th>Gas generator</th><th>Battery power station</th></tr></thead>
+          <tbody>
+            <tr><th>Where you can use it</th><td>Outdoors only, at least 20 ft from the house</td><td>Indoors or outdoors</td></tr>
+            <tr><th>Noise</th><td>Loud (like a lawnmower)</td><td>Near silent (fans only)</td></tr>
+            <tr><th>Runtime</th><td>As long as you have fuel</td><td>Limited by battery size, unless recharged</td></tr>
+            <tr><th>Upkeep</th><td>Oil changes, stale-fuel problems, needs regular starting</td><td>Top up the charge every few months</td></tr>
+            <tr><th>Fumes</th><td>Carbon monoxide — deadly indoors</td><td>None</td></tr>
+            <tr><th>Big loads (well pump, central AC)</th><td>Larger generators can handle them</td><td>Only large home battery systems</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>What the default numbers mean</h2>
+      <p>The calculator starts with a $800 generator and a $1,500, 2,000 Wh power station — common price points for models that can run a fridge, lights and internet — and US average fuel and power prices (gas ${DEFAULTS.gasPrice.toFixed(2)}/gal, electricity {Math.round(DEFAULTS.electricityPrice * 100)}¢/kWh, checked {DEFAULTS.checked}). Change any of them to match what you'd really buy and pay.</p>
+
+      <div class="note"><strong>Safety first:</strong> never run a gas generator inside your home, garage, basement or near open windows, even with doors open. Fit a battery-powered carbon monoxide alarm.</div>
+
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (<details><summary>{f.q}</summary><p>{f.a}</p></details>))}
+      <p style="color:var(--ink-2);font-size:.9rem;margin-top:24px">Last reviewed October 2026 · {SITE.name}</p>
+    </article>
+    <Related tools={['power-station-size', 'solar-charging-time']} guides={['watts-vs-watt-hours', 'power-station-for-refrigerator']} exclude="generator-vs-power-station-cost" />
+  </div>
+</Base>

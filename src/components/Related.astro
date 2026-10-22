@@ -1,0 +1,39 @@
+---
+// "Keep going" block shown at the end of every calculator and guide.
+// Internal links help visitors find the next useful page and help Google
+// understand how the site's pages connect.
+import { getCollection } from 'astro:content';
+import { TOOLS } from '../data/tools.js';
+import { url } from '../lib/site.js';
+
+const { tools = [], guides = [], exclude = '' } = Astro.props;
+const allGuides = await getCollection('guides', ({ data }) => !data.draft);
+
+const toolList = (tools.length ? tools.map((s) => TOOLS.find((t) => t.slug === s)) : TOOLS)
+  .filter((t) => t && t.live && t.slug !== exclude)
+  .slice(0, 3);
+const guideList = (guides.length ? guides.map((s) => allGuides.find((g) => g.id === s)) : allGuides)
+  .filter((g) => g && g.id !== exclude)
+  .slice(0, 3);
+---
+{(toolList.length > 0 || guideList.length > 0) && (
+  <section class="related" aria-label="Related pages">
+    <h2>Keep going</h2>
+    <div class="grid">
+      {toolList.map((t) => (
+        <a class="card tool-card" href={url(`/calculators/${t.slug}/`)}>
+          <p class="eyebrow">Calculator</p>
+          <h3>{t.title}</h3>
+          <p>{t.blurb}</p>
+        </a>
+      ))}
+      {guideList.map((g) => (
+        <a class="card tool-card" href={url(`/guides/${g.id}/`)}>
+          <p class="eyebrow">Guide</p>
+          <h3>{g.data.title}</h3>
+          <p>{g.data.summary}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+)}

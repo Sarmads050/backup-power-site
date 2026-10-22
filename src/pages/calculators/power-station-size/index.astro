@@ -2,9 +2,11 @@
 import Base from '../../../layouts/Base.astro';
 import PowerStationCalculator from '../../../components/PowerStationCalculator.astro';
 import { SITE, url } from '../../../lib/site.js';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Related from '../../../components/Related.astro';
 
 const title = 'Power Station Size Calculator: How Many Wh Do You Need?';
-const description = 'Pick your appliances and get the battery capacity (Wh), continuous output and surge watts your portable power station or solar generator needs — free, no sign-up.';
+const description = 'Free power station size calculator: pick your appliances and get the battery capacity (Wh), output and surge watts your power station or solar generator needs.';
 
 const faqs = [
   {
@@ -49,22 +51,11 @@ const schema = [
     '@type': 'FAQPage',
     mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
   },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url('/'), Astro.site).href },
-      { '@type': 'ListItem', position: 2, name: 'Calculators', item: new URL(url('/calculators/'), Astro.site).href },
-      { '@type': 'ListItem', position: 3, name: 'Power Station Size Calculator' },
-    ],
-  },
 ];
 ---
 <Base title={title} description={description} schema={schema}>
   <div class="wrap">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href={url('/')}>Home</a> › <a href={url('/calculators/')}>Calculators</a> › Power Station Size
-    </nav>
+    <Breadcrumbs items={[{ name: 'Calculators', href: '/calculators/' }, { name: 'Power Station Size' }]} />
     <p class="eyebrow" style="margin-top:16px">Calculator</p>
     <h1>Power Station Size Calculator</h1>
     <p class="lede">Tell us what you want to keep running and for how long. You'll get the three numbers that matter when you shop: <strong>battery capacity (Wh)</strong>, <strong>continuous output (W)</strong> and <strong>surge output (W)</strong>.</p>
@@ -120,5 +111,6 @@ const schema = [
       </ul>
       <p style="color:var(--ink-2);font-size:.9rem">Last reviewed October 2026 · {SITE.name}</p>
     </article>
+    <Related tools={['solar-charging-time','appliance-wattage','cpap-battery-runtime']} guides={['power-station-for-refrigerator','watts-vs-watt-hours','power-station-for-sump-pump']} exclude="power-station-size" />
   </div>
 </Base>

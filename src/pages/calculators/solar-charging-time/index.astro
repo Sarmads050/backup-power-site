@@ -2,9 +2,11 @@
 import Base from '../../../layouts/Base.astro';
 import SolarChargeCalculator from '../../../components/SolarChargeCalculator.astro';
 import { SITE, url } from '../../../lib/site.js';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Related from '../../../components/Related.astro';
 
 const title = 'Solar Charging Time Calculator for Power Stations';
-const description = 'Find out how many hours of sun your solar panels need to recharge a portable power station or solar generator — and what panel size refills it in one day.';
+const description = 'Solar charging time calculator: see how many hours of sun your panels need to recharge a portable power station, and what panel size refills it in one day.';
 
 const faqs = [
   {
@@ -49,9 +51,7 @@ const schema = [
 ---
 <Base title={title} description={description} schema={schema}>
   <div class="wrap">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href={url('/')}>Home</a> › <a href={url('/calculators/')}>Calculators</a> › Solar Charging Time
-    </nav>
+    <Breadcrumbs items={[{ name: 'Calculators', href: '/calculators/' }, { name: 'Solar Charging Time' }]} />
     <p class="eyebrow" style="margin-top:16px">Calculator</p>
     <h1>Solar Charging Time Calculator</h1>
     <p class="lede">How long will your solar panels take to refill your power station? Enter your battery size, your panels and where you live.</p>
@@ -90,5 +90,6 @@ const schema = [
 
       <p style="color:var(--ink-2);font-size:.9rem;margin-top:24px">Last reviewed October 2026 · {SITE.name}</p>
     </article>
+    <Related tools={['power-station-size','generator-vs-power-station-cost']} guides={['watts-vs-watt-hours','lifepo4-vs-lithium-ion-power-station']} exclude="solar-charging-time" />
   </div>
 </Base>

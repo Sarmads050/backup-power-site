@@ -3,7 +3,7 @@ export const SITE = {
   name: 'BackupWatts',
   tagline: 'Honest calculators for home backup power',
   description:
-    'Free calculators and plain-English guides to help you size a portable power station, solar generator or home battery for power outages, camping and RVs.',
+    'Free backup power calculators and plain-English guides to size a portable power station, solar generator or home battery for outages, camping and RVs.',
   // Contact email is added once the domain (and a domain email) exists.
   contactEmail: '',
   launchYear: 2026,
@@ -19,5 +19,6 @@ export function url(path = '/') {
 
 export const NAV = [
   { label: 'Calculators', href: '/calculators/' },
+  { label: 'Guides', href: '/guides/' },
   { label: 'About', href: '/about/' },
 ];

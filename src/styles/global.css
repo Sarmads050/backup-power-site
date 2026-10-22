@@ -92,3 +92,35 @@ details { border-bottom: 1px solid var(--line); padding: 12px 0; }
 details summary { cursor: pointer; font-weight: 700; }
 .breadcrumbs { font-size: .9rem; color: var(--ink-2); margin: 20px 0 0; }
 .breadcrumbs a { color: var(--ink-2); }
+
+/* Accessibility & usability */
+.skip-link { position: absolute; left: -9999px; top: 8px; background: var(--brand); color: var(--brand-ink); padding: 10px 14px; border-radius: 8px; z-index: 100; }
+.skip-link:focus { left: 8px; }
+main:focus { outline: none; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.site-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 3px; text-underline-offset: 8px; }
+@media (max-width: 480px) { .site-nav { gap: 14px; font-size: .95rem; } .logo { font-size: 1.1rem; } }
+input, select, button { min-height: 40px; }
+input[type=checkbox] { min-height: auto; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+html { scroll-behavior: smooth; }
+
+/* Footer columns */
+.footer-cols { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 16px; }
+.footer-cols ul { list-style: none; padding: 0; margin: 0; }
+.footer-cols li { margin: 6px 0; }
+.footer-head { font-weight: 700; color: var(--ink); margin: 0 0 6px; }
+
+/* Related links block */
+.related { margin: 40px 0 0; }
+.related h2 { margin-top: 0; }
+
+/* Article / guide body */
+.guide-meta { color: var(--ink-2); font-size: .95rem; margin: -6px 0 18px; }
+.toc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin: 18px 0 24px; }
+.toc p { font-weight: 700; margin: 0 0 6px; }
+.toc ol { margin: 0; padding-left: 1.2em; }
+.answer-box { background: var(--accent-soft); border-left: 4px solid var(--accent); border-radius: 8px; padding: 14px 18px; margin: 0 0 20px; }
+.answer-box p:last-child { margin: 0; }
+.cta-box { background: var(--surface); border: 2px solid var(--brand); border-radius: var(--radius); padding: 18px; margin: 28px 0; }
+.cta-box p { margin: 0 0 10px; }

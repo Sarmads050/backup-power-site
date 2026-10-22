@@ -1,14 +1,26 @@
 ---
 import '../styles/global.css';
 import { SITE, NAV, url } from '../lib/site.js';
+import { TOOLS } from '../data/tools.js';
 
-const { title, description = SITE.description, schema = null, noindex = false } = Astro.props;
+const {
+  title,
+  description = SITE.description,
+  schema = null,
+  noindex = false,
+  ogType = 'website',
+  published = null,
+  modified = null,
+} = Astro.props;
 const fullTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} — ${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(url('/og-default.png'), Astro.site).href;
 // While the site lives on the free preview address, keep Google out so the
 // preview never competes with the real domain later.
 const isPreview = import.meta.env.PUBLIC_PREVIEW === 'true';
 const year = new Date().getFullYear();
+const here = Astro.url.pathname;
+const liveTools = TOOLS.filter((t) => t.live);
 ---
 <!doctype html>
 <html lang="en">
@@ -19,23 +31,39 @@ const year = new Date().getFullYear();
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {(noindex || isPreview) && <meta name="robots" content="noindex, nofollow" />}
-    <meta property="og:type" content="website" />
+    {!(noindex || isPreview) && <meta name="robots" content="index, follow, max-image-preview:large" />}
+    <meta name="theme-color" content="#0f3d3e" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={SITE.name} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+    {published && <meta property="article:published_time" content={published} />}
+    {modified && <meta property="article:modified_time" content={modified} />}
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
     <link rel="sitemap" href={url('/sitemap-index.xml')} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
     {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: SITE.name,
+      url: new URL(url('/'), Astro.site).href,
+      logo: new URL(url('/favicon.svg'), Astro.site).href,
+    })} />
   </head>
   <body>
+    <a class="skip-link" href="#content">Skip to content</a>
     <header class="site-header">
       <div class="wrap">
-        <a class="logo" href={url('/')}>
+        <a class="logo" href={url('/')} aria-label={`${SITE.name} home`}>
           <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
             <rect x="3" y="8" width="24" height="17" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/>
             <rect x="27" y="13" width="3" height="7" rx="1" fill="currentColor"/>
@@ -44,24 +72,37 @@ const year = new Date().getFullYear();
           {SITE.name}
         </a>
         <nav class="site-nav" aria-label="Main">
-          {NAV.map((n) => <a href={url(n.href)}>{n.label}</a>)}
+          {NAV.map((n) => {
+            const href = url(n.href);
+            return <a href={href} aria-current={here.startsWith(href) ? 'page' : undefined}>{n.label}</a>;
+          })}
         </nav>
       </div>
     </header>
 
-    <main>
+    <main id="content" tabindex="-1">
       <slot />
     </main>
 
     <footer class="site-footer">
       <div class="wrap">
-        <nav aria-label="Footer">
-          <a href={url('/about/')}>About</a>
-          <a href={url('/contact/')}>Contact</a>
-          <a href={url('/privacy-policy/')}>Privacy Policy</a>
-          <a href={url('/affiliate-disclosure/')}>Affiliate Disclosure</a>
-          <a href={url('/terms/')}>Terms</a>
-        </nav>
+        <div class="footer-cols">
+          <div>
+            <p class="footer-head">Calculators</p>
+            <ul>{liveTools.map((t) => <li><a href={url(`/calculators/${t.slug}/`)}>{t.title}</a></li>)}</ul>
+          </div>
+          <div>
+            <p class="footer-head">Site</p>
+            <ul>
+              <li><a href={url('/guides/')}>Guides</a></li>
+              <li><a href={url('/about/')}>About</a></li>
+              <li><a href={url('/contact/')}>Contact</a></li>
+              <li><a href={url('/privacy-policy/')}>Privacy Policy</a></li>
+              <li><a href={url('/affiliate-disclosure/')}>Affiliate Disclosure</a></li>
+              <li><a href={url('/terms/')}>Terms</a></li>
+            </ul>
+          </div>
+        </div>
         <p>© {year} {SITE.name}. Calculator results are estimates. Always check your equipment's labels and manuals before relying on backup power.</p>
       </div>
     </footer>

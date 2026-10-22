@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview"
+    "build": "astro build && node scripts/seo-check.mjs",
+    "preview": "astro preview",
+    "seo-check": "node scripts/seo-check.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -14,5 +15,8 @@
   "type": "module",
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "node-html-parser": "^9.0.5"
   }
 }

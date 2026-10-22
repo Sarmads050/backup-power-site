@@ -1,0 +1,98 @@
+---
+import Base from '../../../layouts/Base.astro';
+import CpapCalculator from '../../../components/CpapCalculator.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Related from '../../../components/Related.astro';
+import { SITE, url } from '../../../lib/site.js';
+
+const title = 'CPAP Battery Calculator: How Many Nights Will It Last?';
+const description = 'CPAP battery calculator: see how many nights a power station or battery will run your CPAP, with or without the heated humidifier, and what size you need.';
+
+const faqs = [
+  {
+    q: 'How long will a power station run a CPAP?',
+    a: 'With the humidifier off, most CPAP machines average about 30–60 W, so an 8-hour night uses roughly 250–500 Wh. A 500 Wh power station usually gives one to two nights; a 1,000 Wh unit two to four. Turning on the heated humidifier and heated tube can double or triple the energy used.',
+  },
+  {
+    q: 'Why does the humidifier use so much power?',
+    a: 'The humidifier heats water all night, and a heated tube warms the air on its way to your mask. Heating takes far more power than the blower itself. On battery, many people turn the humidifier off or down, which can stretch one night of battery into two or three.',
+  },
+  {
+    q: 'Should I use the AC outlet or a DC adapter?',
+    a: 'A DC (12 V) adapter made for your CPAP skips the power station’s inverter, which wastes energy turning battery power into wall power. That usually gives 5–10% more runtime, sometimes more. Use only the adapter your CPAP’s manufacturer approves.',
+  },
+  {
+    q: 'What size battery do I need for a CPAP for 3 nights?',
+    a: 'For a basic CPAP with the humidifier off (about 35 W for 8 hours), plan on roughly 1,000 Wh for three nights from an AC outlet. With a heated humidifier and tube, you could need 2,500 Wh or more. Use the calculator with your own settings for a closer number.',
+  },
+  {
+    q: 'How do I find my CPAP’s actual power use?',
+    a: 'Your CPAP’s power supply lists a maximum wattage — that is the worst case, not the normal draw. Your manufacturer may publish battery-runtime guidance for your model, and a plug-in watt meter can measure a real night’s use in watt-hours.',
+  },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'CPAP Battery Runtime Calculator',
+    url: new URL(url('/calculators/cpap-battery-runtime/'), Astro.site).href,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+<Base title={title} description={description} schema={schema}>
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'Calculators', href: '/calculators/' }, { name: 'CPAP Battery Runtime' }]} />
+    <p class="eyebrow" style="margin-top:16px">Calculator</p>
+    <h1>CPAP Battery Calculator</h1>
+    <p class="lede">This CPAP battery calculator shows how many nights a portable power station or battery will keep your CPAP running during a power outage or camping trip — and how much the humidifier changes it.</p>
+
+    <CpapCalculator />
+
+    <article class="prose">
+      <h2>How the calculation works</h2>
+      <ol>
+        <li><strong>Energy per night</strong> = your CPAP's average watts × hours of use. A 35 W CPAP for 8 hours uses 280 Wh.</li>
+        <li>We divide by 0.85 for a normal AC outlet (energy lost in the power station's inverter) or 0.9 for a DC adapter. 280 Wh becomes about 330 Wh from the battery.</li>
+        <li><strong>Nights</strong> = battery capacity ÷ energy taken per night. A 500 Wh battery gives about 1.5 nights.</li>
+      </ol>
+
+      <h2>Typical CPAP power use</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Setup</th><th>Average draw</th><th>8-hour night</th></tr></thead>
+          <tbody>
+            <tr><td>CPAP only, humidifier off</td><td>30–60 W</td><td>240–480 Wh</td></tr>
+            <tr><td>With heated humidifier</td><td>about 50–80 W</td><td>400–640 Wh</td></tr>
+            <tr><td>Humidifier + heated tube</td><td>about 70–110 W</td><td>560–880 Wh</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>These are typical ranges. Higher pressure settings, a cold bedroom and high humidifier settings all push power use up. Your machine's manual or manufacturer is the best source for your exact model.</p>
+
+      <div class="note"><strong>Important:</strong> a CPAP is medical equipment. This calculator gives estimates only. Talk to your doctor or equipment supplier about a backup plan, test your setup at home before you need it, and never rely on a single battery for life-sustaining equipment.</div>
+
+      <h2>Ways to make a battery last longer</h2>
+      <ul>
+        <li>Turn the humidifier and heated tube off or down while on battery.</li>
+        <li>Use your CPAP maker's DC adapter instead of the AC outlet.</li>
+        <li>Charge the power station fully before storm season, and top it up every few months.</li>
+        <li>Pair it with a solar panel — see the <a href={url('/calculators/solar-charging-time/')}>solar charging time calculator</a>.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (<details><summary>{f.q}</summary><p>{f.a}</p></details>))}
+      <p style="color:var(--ink-2);font-size:.9rem;margin-top:24px">Last reviewed October 2026 · {SITE.name}</p>
+    </article>
+    <Related tools={['power-station-size', 'solar-charging-time']} guides={['watts-vs-watt-hours', 'lifepo4-vs-lithium-ion-power-station']} exclude="cpap-battery-runtime" />
+  </div>
+</Base>

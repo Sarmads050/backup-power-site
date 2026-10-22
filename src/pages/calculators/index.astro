@@ -1,11 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
 import ToolGrid from '../../components/ToolGrid.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 ---
-<Base title="Backup Power Calculators" description="Free calculators for sizing portable power stations, solar generators and home batteries.">
+<Base title="Backup Power Calculators" description="Free backup power calculators for sizing portable power stations, solar generators and home batteries — with the maths shown.">
   <div class="wrap">
-    <h1 style="margin-top:32px">Backup power calculators</h1>
-    <p class="lede">Simple tools that answer one question each, with the maths shown underneath.</p>
+    <Breadcrumbs items={[{ name: 'Calculators' }]} />
+    <h1 style="margin-top:20px">Backup power calculators</h1>
+    <p class="lede">Our backup power calculators each answer one question — how big, how long, how much — with the maths shown underneath.</p>
     <ToolGrid />
   </div>
 </Base>

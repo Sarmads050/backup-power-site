@@ -2,6 +2,8 @@
 import Base from '../layouts/Base.astro';
 import ToolGrid from '../components/ToolGrid.astro';
 import { SITE, url } from '../lib/site.js';
+import { getCollection } from 'astro:content';
+const guides = (await getCollection('guides', ({ data }) => !data.draft)).sort((a, b) => b.data.updated - a.data.updated).slice(0, 6);
 
 const schema = {
   '@context': 'https://schema.org',
@@ -16,7 +18,7 @@ const schema = {
     <div class="wrap">
       <p class="eyebrow">Power outage? Camping? Off-grid?</p>
       <h1>Find the right size backup battery — in two minutes.</h1>
-      <p class="lede">Free calculators that turn "will it run my fridge?" into real numbers: how many watt-hours, how many watts, and how long it will last. No sign-up, no sales pitch.</p>
+      <p class="lede">Free backup power calculators that turn "will it run my fridge?" into real numbers: how many watt-hours, how many watts, and how long it will last. No sign-up, no sales pitch.</p>
       <a class="btn" href={url('/calculators/power-station-size/')}>Size my power station →</a>
     </div>
   </section>
@@ -24,6 +26,16 @@ const schema = {
   <div class="wrap">
     <h2>Calculators</h2>
     <ToolGrid />
+
+    <h2>Popular guides</h2>
+    <div class="grid">
+      {guides.map((g) => (
+        <a class="card tool-card" href={url(`/guides/${g.id}/`)}>
+          <h3>{g.data.title}</h3>
+          <p>{g.data.summary}</p>
+        </a>
+      ))}
+    </div>
 
     <section class="prose">
       <h2>Why we built this</h2>

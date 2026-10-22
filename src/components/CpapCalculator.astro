@@ -1,0 +1,140 @@
+---
+import { CPAP_PRESETS } from '../lib/cpapMath.js';
+---
+<section class="calc" id="calculator" aria-label="CPAP battery runtime calculator">
+  <div class="calc-grid">
+    <div class="calc-inputs">
+      <fieldset class="card fs">
+        <legend>Your CPAP</legend>
+        <div class="opt">
+          <span>How do you use it?</span>
+          <div class="radio-list">
+            {CPAP_PRESETS.map((p, i) => (
+              <label class="radio"><input type="radio" name="preset" value={p.watts} checked={i === 0} /> {p.label} <em>~{p.watts} W</em></label>
+            ))}
+            <label class="radio"><input type="radio" name="preset" value="custom" /> I know my machine's watts</label>
+          </div>
+        </div>
+        <label class="opt" id="custom-wrap" hidden>
+          <span>Average watts</span>
+          <input type="number" id="custom-w" min="5" max="300" step="1" value="40" inputmode="numeric" />
+        </label>
+        <label class="opt">
+          <span>Hours of use per night</span>
+          <input type="number" id="hours" min="1" max="24" step="0.5" value="8" inputmode="decimal" />
+        </label>
+        <label class="opt">
+          <span>Power supply rating (W) <em>optional, for worst case</em></span>
+          <input type="number" id="psu" min="0" max="300" step="1" placeholder="e.g. 90" inputmode="numeric" />
+          <small>Printed on your CPAP's power brick. Your machine won't use more than this.</small>
+        </label>
+      </fieldset>
+
+      <fieldset class="card fs">
+        <legend>Your battery</legend>
+        <label class="opt">
+          <span>Battery capacity (Wh)</span>
+          <input type="number" id="wh" min="50" max="20000" step="10" value="500" inputmode="numeric" />
+        </label>
+        <div class="opt">
+          <span>How will you plug it in?</span>
+          <div class="radio-list">
+            <label class="radio"><input type="radio" name="mode" value="ac" checked /> Normal wall plug (AC outlet)</label>
+            <label class="radio"><input type="radio" name="mode" value="dc" /> CPAP maker's DC / 12 V adapter <em>(lasts longer)</em></label>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <aside class="calc-results" aria-live="polite">
+      <div class="results card">
+        <p class="eyebrow">Your battery should last</p>
+        <div class="big" id="r-nights">—</div>
+        <p class="big-label" id="r-sub">nights</p>
+        <div class="class-box" id="r-box"></div>
+        <dl class="specs">
+          <div><dt>CPAP uses per night</dt><dd id="r-pernight">—</dd></div>
+          <div><dt>Taken from battery</dt><dd id="r-frombatt">—</dd></div>
+          <div><dt>For 2 nights you need</dt><dd id="r-2">—</dd></div>
+          <div><dt>For 3 nights you need</dt><dd id="r-3">—</dd></div>
+        </dl>
+        <h3>Common battery sizes</h3>
+        <table class="runtime"><tbody id="r-table"></tbody></table>
+        <p class="fine">Estimates only. For medical equipment, confirm with your CPAP supplier and keep a backup plan.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  import { cpapNights } from '../lib/cpapMath.js';
+  const $ = (s) => document.querySelector(s);
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const nightsText = (n) => !isFinite(n) ? '—' : n < 1 ? `${(n * Number($('#hours').value || 8)).toFixed(1)} hours` : n >= 10 ? `${Math.floor(n)} nights` : `${n.toFixed(1)} nights`;
+
+  function update() {
+    const preset = document.querySelector('input[name=preset]:checked').value;
+    $('#custom-wrap').hidden = preset !== 'custom';
+    const watts = preset === 'custom' ? $('#custom-w').value : preset;
+    const mode = document.querySelector('input[name=mode]:checked').value;
+    const r = cpapNights({ watts, hoursPerNight: $('#hours').value, batteryWh: $('#wh').value, mode, worstCaseW: $('#psu').value });
+
+    if (!isFinite(r.nights)) { $('#r-nights').textContent = '—'; return; }
+    const n = r.nights;
+    $('#r-nights').textContent = n < 1 ? `${(n * Number($('#hours').value)).toFixed(1)} h` : n >= 10 ? Math.floor(n) : n.toFixed(1);
+    $('#r-sub').textContent = n < 1 ? 'of use — less than one night' : 'nights';
+
+    let box = n >= 3 ? '<strong>Comfortable for a multi-day outage.</strong>'
+      : n >= 1 ? '<strong>Covers at least one full night.</strong>'
+      : '<strong>Not enough for a full night.</strong> Choose a bigger battery or turn off the humidifier.';
+    if (r.worstNights !== null) box += `<p>Worst case at the power-supply rating: about ${nightsText(r.worstNights)}.</p>`;
+    if (mode === 'ac') box += '<p>Tip: a DC adapter from your CPAP maker usually adds 5–10% more runtime.</p>';
+    $('#r-box').innerHTML = box;
+
+    $('#r-pernight').textContent = `${fmt(r.perNight)} Wh`;
+    $('#r-frombatt').textContent = `${fmt(r.fromBattery)} Wh`;
+    $('#r-2').textContent = `${fmt(r.neededFor(2))} Wh`;
+    $('#r-3').textContent = `${fmt(r.neededFor(3))} Wh`;
+
+    $('#r-table').innerHTML = [300, 500, 1000, 2000].map((size) => {
+      const x = cpapNights({ watts, hoursPerNight: $('#hours').value, batteryWh: size, mode });
+      return `<tr class="${x.nights >= 1 ? 'ok' : ''}"><th>${fmt(size)} Wh</th><td>${nightsText(x.nights)}</td></tr>`;
+    }).join('');
+  }
+
+  document.addEventListener('input', (e) => { if (e.target.closest('#calculator')) update(); });
+  document.addEventListener('change', (e) => { if (e.target.closest('#calculator')) update(); });
+  update();
+</script>
+
+<style>
+  .calc { margin: 24px 0 8px; }
+  .calc-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } .calc-results { order: -1; } }
+  .calc-results { position: sticky; top: 16px; }
+  @media (max-width: 900px) { .calc-results { position: static; } }
+  .fs { margin: 0 0 16px; display: grid; gap: 14px; }
+  .fs legend { font-family: var(--font-head); font-weight: 700; padding: 0 6px; }
+  .opt { display: grid; gap: 6px; font-weight: 600; }
+  .opt em { font-weight: 400; font-style: normal; color: var(--ink-2); font-size: .9rem; }
+  .opt small { font-weight: 400; color: var(--ink-2); font-size: .86rem; }
+  .opt input[type=number] { width: 100%; font: inherit; font-size: 1rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .opt[hidden] { display: none; }
+  .radio-list { display: grid; gap: 4px; }
+  .radio { display: flex; gap: 10px; align-items: center; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; background: var(--bg); }
+  .radio:has(input:checked) { border-color: var(--brand); background: var(--surface-2); font-weight: 600; }
+  .radio input { width: 18px; height: 18px; accent-color: var(--brand); min-height: auto; }
+  .radio em { margin-left: auto; font-style: normal; color: var(--ink-2); font-size: .9rem; }
+  .results { border-top: 5px solid var(--accent); }
+  .big { font-family: var(--font-head); font-size: 3rem; font-weight: 700; line-height: 1; margin-top: 8px; }
+  .big-label { color: var(--ink-2); margin: 4px 0 14px; }
+  .class-box { background: var(--accent-soft); border-radius: 10px; padding: 12px; font-size: .95rem; }
+  .class-box p { margin: 6px 0 0; }
+  .specs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .specs dt { font-size: .82rem; color: var(--ink-2); }
+  .specs dd { margin: 0; font-weight: 700; font-size: 1.1rem; }
+  .results h3 { font-size: 1rem; margin: 12px 0 4px; }
+  .runtime th, .runtime td { padding: 6px 4px; }
+  .runtime tr.ok td { color: var(--good); font-weight: 700; }
+  .fine { font-size: .85rem; color: var(--ink-2); margin: 12px 0 0; }
+</style>

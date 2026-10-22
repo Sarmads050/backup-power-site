@@ -16,13 +16,13 @@ export const TOOLS = [
     slug: 'generator-vs-power-station-cost',
     title: 'Generator vs Power Station Cost',
     blurb: 'Five-year cost of a gas generator against a battery power station.',
-    live: false,
+    live: true,
   },
   {
     slug: 'cpap-battery-runtime',
     title: 'CPAP Battery Runtime Calculator',
     blurb: 'How many nights a battery will run your CPAP, with or without the humidifier.',
-    live: false,
+    live: true,
   },
   {
     slug: 'appliance-wattage',

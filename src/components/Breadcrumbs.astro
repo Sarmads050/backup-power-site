@@ -1,0 +1,26 @@
+---
+// Visible breadcrumb trail + matching BreadcrumbList structured data for Google.
+// items: [{ name, href? }] — the last item is the current page (no link).
+import { url } from '../lib/site.js';
+const { items = [] } = Astro.props;
+const all = [{ name: 'Home', href: '/' }, ...items];
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: all.map((it, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: it.name,
+    ...(it.href ? { item: new URL(url(it.href), Astro.site).href } : {}),
+  })),
+};
+---
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  {all.map((it, i) => (
+    <>
+      {i > 0 && <span aria-hidden="true"> › </span>}
+      {it.href && i < all.length - 1 ? <a href={url(it.href)}>{it.name}</a> : <span aria-current="page">{it.name}</span>}
+    </>
+  ))}
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

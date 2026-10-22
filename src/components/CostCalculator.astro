@@ -1,0 +1,176 @@
+---
+import { DEFAULTS } from '../lib/costMath.js';
+import { url } from '../lib/site.js';
+---
+<section class="calc" id="calculator" aria-label="Generator vs power station cost calculator">
+  <div class="calc-grid">
+    <div class="calc-inputs">
+      <fieldset class="card fs">
+        <legend>How you'll use backup power</legend>
+        <label class="opt">
+          <span>Hours of use per year</span>
+          <select id="hours-preset">
+            <option value="8">Rare outages — about 8 hours a year</option>
+            <option value="24" selected>A few storms — about 24 hours a year</option>
+            <option value="72">Frequent outages — about 72 hours a year</option>
+            <option value="200">Outages + camping/RV — about 200 hours a year</option>
+            <option value="custom">Custom…</option>
+          </select>
+        </label>
+        <label class="opt" id="hours-custom-wrap" hidden>
+          <span>Custom hours per year</span>
+          <input type="number" id="hours" min="0" max="8760" step="1" value="24" inputmode="numeric" />
+        </label>
+        <label class="opt">
+          <span>Average power you'll draw (W)</span>
+          <input type="number" id="load" min="50" max="5000" step="50" value="500" inputmode="numeric" />
+          <small>Fridge, lights, Wi-Fi and phones average roughly 300–600 W. Use the <a href={url('/calculators/power-station-size/')}>size calculator</a> to work yours out.</small>
+        </label>
+        <div class="two">
+          <label class="opt">
+            <span>Compare over (years)</span>
+            <input type="number" id="years" min="1" max="15" step="1" value="5" inputmode="numeric" />
+          </label>
+          <label class="opt">
+            <span>Longest outage (hours)</span>
+            <input type="number" id="longest" min="1" max="336" step="1" value="12" inputmode="numeric" />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card fs">
+        <legend>Gas generator</legend>
+        <div class="two">
+          <label class="opt"><span>Price ($)</span><input type="number" id="gen-price" min="0" step="50" value="800" inputmode="numeric" /></label>
+          <label class="opt"><span>Gas price ($/gal)</span><input type="number" id="gas" min="0" step="0.05" value={DEFAULTS.gasPrice} inputmode="decimal" /></label>
+          <label class="opt"><span>Fuel use (gal/hour)</span><input type="number" id="gph" min="0" step="0.01" value="0.14" inputmode="decimal" /><small id="gph-note">Auto-estimated for your load</small></label>
+          <label class="opt"><span>Upkeep per year ($)</span><input type="number" id="gen-maint" min="0" step="10" value="60" inputmode="numeric" /><small>Oil, spark plug, fuel stabilizer</small></label>
+        </div>
+      </fieldset>
+
+      <fieldset class="card fs">
+        <legend>Battery power station</legend>
+        <div class="two">
+          <label class="opt"><span>Price ($)</span><input type="number" id="ps-price" min="0" step="50" value="1500" inputmode="numeric" /></label>
+          <label class="opt"><span>Capacity (Wh)</span><input type="number" id="ps-wh" min="100" step="100" value="2000" inputmode="numeric" /></label>
+          <label class="opt"><span>Electricity ($/kWh)</span><input type="number" id="elec" min="0" step="0.01" value={DEFAULTS.electricityPrice} inputmode="decimal" /><small>Check your power bill</small></label>
+        </div>
+      </fieldset>
+    </div>
+
+    <aside class="calc-results" aria-live="polite">
+      <div class="results card">
+        <p class="eyebrow" id="r-years-label">Total cost over 5 years</p>
+        <div class="bars">
+          <div class="bar-row"><span>Generator</span><div class="bar"><i id="bar-gen"></i></div><strong id="r-gen">—</strong></div>
+          <div class="bar-row"><span>Power station</span><div class="bar"><i id="bar-ps" class="ps"></i></div><strong id="r-ps">—</strong></div>
+        </div>
+        <div class="class-box" id="r-verdict"></div>
+        <dl class="specs">
+          <div><dt>Generator running cost</dt><dd id="r-gen-hr">—</dd></div>
+          <div><dt>Power station running cost</dt><dd id="r-ps-hr">—</dd></div>
+          <div><dt>Gas per year</dt><dd id="r-gal">—</dd></div>
+          <div><dt>Power station runtime</dt><dd id="r-runtime">—</dd></div>
+        </dl>
+        <p class="warn-line" id="r-warn" hidden></p>
+        <p class="fine">Gas and electricity defaults checked {DEFAULTS.checked}. Prices change — type in yours.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="table-scroll card year-table">
+    <table>
+      <thead><tr><th>After year</th><th>Generator (total paid)</th><th>Power station (total paid)</th></tr></thead>
+      <tbody id="r-rows"></tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  import { compareCosts, estimateGallonsPerHour } from '../lib/costMath.js';
+  const $ = (s) => document.querySelector(s);
+  const usd = (n) => '$' + Math.round(n).toLocaleString('en-US');
+  const cents = (n) => n < 1 ? `${Math.round(n * 100)}¢` : `$${n.toFixed(2)}`;
+  let gphTouched = false;
+
+  function update() {
+    const preset = $('#hours-preset').value;
+    $('#hours-custom-wrap').hidden = preset !== 'custom';
+    if (preset !== 'custom') $('#hours').value = preset;
+    const load = Number($('#load').value) || 0;
+    if (!gphTouched) $('#gph').value = estimateGallonsPerHour(load).toFixed(2);
+    $('#gph-note').textContent = gphTouched ? 'Your own figure' : 'Auto-estimated for your load (≈3,500 W inverter generator)';
+
+    const r = compareCosts({
+      hoursPerYear: $('#hours').value, loadW: load, years: $('#years').value,
+      genPrice: $('#gen-price').value, galPerHour: $('#gph').value, gasPrice: $('#gas').value, genMaintPerYear: $('#gen-maint').value,
+      psPrice: $('#ps-price').value, psWh: $('#ps-wh').value, elecPrice: $('#elec').value, longestOutageH: $('#longest').value,
+    });
+
+    $('#r-years-label').textContent = `Total cost over ${r.years} year${r.years > 1 ? 's' : ''}`;
+    $('#r-gen').textContent = usd(r.genTotal);
+    $('#r-ps').textContent = usd(r.psTotal);
+    const max = Math.max(r.genTotal, r.psTotal, 1);
+    $('#bar-gen').style.width = `${(r.genTotal / max) * 100}%`;
+    $('#bar-ps').style.width = `${(r.psTotal / max) * 100}%`;
+
+    let verdict;
+    if (r.cheaper === 'tie') verdict = '<strong>They cost about the same.</strong>';
+    else verdict = `<strong>The ${r.cheaper} is about ${usd(r.difference)} cheaper</strong> over ${r.years} year${r.years > 1 ? 's' : ''}.`;
+    if (r.breakEvenYear !== null) {
+      verdict += r.breakEvenYear <= r.years
+        ? `<p>The power station costs more up front but pays that back in about ${r.breakEvenYear.toFixed(1)} years because it needs no gas or upkeep.</p>`
+        : `<p>The power station would only catch up after about ${Math.round(r.breakEvenYear)} years at this level of use.</p>`;
+    }
+    $('#r-verdict').innerHTML = verdict;
+
+    $('#r-gen-hr').textContent = `${cents(r.genPerHour)} / hour`;
+    $('#r-ps-hr').textContent = `${cents(r.psPerHour)} / hour`;
+    $('#r-gal').textContent = `${r.gallonsPerYear.toFixed(1)} gal (${usd(r.genFuelPerYear)})`;
+    $('#r-runtime').textContent = isFinite(r.psRuntimeH) ? `${r.psRuntimeH.toFixed(1)} h per charge` : '—';
+
+    const warn = $('#r-warn');
+    if (!r.psCoversLongest && isFinite(r.psRuntimeH)) {
+      warn.hidden = false;
+      warn.textContent = `A ${Number($('#ps-wh').value).toLocaleString('en-US')} Wh power station lasts about ${r.psRuntimeH.toFixed(1)} hours at ${load} W — less than your ${r.longest}-hour outage. You'd need a bigger battery, extra battery packs or solar panels, which adds cost.`;
+    } else warn.hidden = true;
+
+    $('#r-rows').innerHTML = r.rows.slice(1).map((row) =>
+      `<tr><td>${row.year}</td><td>${usd(row.gen)}</td><td>${usd(row.ps)}</td></tr>`).join('');
+  }
+
+  $('#gph').addEventListener('input', () => { gphTouched = true; });
+  document.addEventListener('input', (e) => { if (e.target.closest('#calculator')) update(); });
+  document.addEventListener('change', (e) => { if (e.target.closest('#calculator')) update(); });
+  update();
+</script>
+
+<style>
+  .calc { margin: 24px 0 8px; }
+  .calc-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) 360px; align-items: start; }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } .calc-results { order: -1; } }
+  .calc-results { position: sticky; top: 16px; }
+  @media (max-width: 900px) { .calc-results { position: static; } }
+  .fs { margin: 0 0 16px; display: grid; gap: 14px; }
+  .fs legend { font-family: var(--font-head); font-weight: 700; padding: 0 6px; }
+  .opt { display: grid; gap: 6px; font-weight: 600; align-content: start; }
+  .opt small { font-weight: 400; color: var(--ink-2); font-size: .86rem; }
+  .opt input, .opt select { width: 100%; font: inherit; font-size: 1rem; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .opt[hidden] { display: none; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 420px) { .two { grid-template-columns: 1fr; } }
+  .results { border-top: 5px solid var(--accent); }
+  .bars { display: grid; gap: 10px; margin: 10px 0 14px; }
+  .bar-row { display: grid; grid-template-columns: 96px 1fr auto; gap: 10px; align-items: center; font-size: .95rem; }
+  .bar { height: 14px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--warn); border-radius: 99px; transition: width .2s; }
+  .bar i.ps { background: var(--brand); }
+  .class-box { background: var(--accent-soft); border-radius: 10px; padding: 12px; font-size: .95rem; }
+  .class-box p { margin: 6px 0 0; }
+  .specs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .specs dt { font-size: .82rem; color: var(--ink-2); }
+  .specs dd { margin: 0; font-weight: 700; font-size: 1.05rem; }
+  .warn-line { font-size: .92rem; border-left: 4px solid var(--warn); background: var(--surface-2); padding: 10px; border-radius: 8px; }
+  .fine { font-size: .85rem; color: var(--ink-2); margin: 12px 0 0; }
+  .year-table { margin-top: 8px; padding: 4px 12px; }
+</style>

@@ -1,0 +1,79 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Related from '../../components/Related.astro';
+import { SITE, url } from '../../lib/site.js';
+import { TOOLS } from '../../data/tools.js';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides', ({ data }) => !data.draft);
+  return guides.map((g) => ({ params: { slug: g.id }, props: { guide: g } }));
+}
+
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+const d = guide.data;
+const pageUrl = new URL(url(`/guides/${guide.id}/`), Astro.site).href;
+const toc = headings.filter((h) => h.depth === 2);
+const fmtDate = (dt) => dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+const firstTool = TOOLS.find((t) => t.slug === d.relatedTools[0] && t.live);
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: d.title,
+    description: d.description,
+    datePublished: d.published.toISOString(),
+    dateModified: d.updated.toISOString(),
+    mainEntityOfPage: pageUrl,
+    author: { '@type': 'Organization', name: SITE.name, url: new URL(url('/about/'), Astro.site).href },
+    publisher: { '@type': 'Organization', name: SITE.name },
+    image: new URL(url('/og-default.png'), Astro.site).href,
+  },
+  ...(d.faqs.length ? [{
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: d.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  }] : []),
+];
+---
+<Base title={d.title} description={d.description} schema={schema} ogType="article"
+  published={d.published.toISOString()} modified={d.updated.toISOString()}>
+  <div class="wrap">
+    <Breadcrumbs items={[{ name: 'Guides', href: '/guides/' }, { name: d.title }]} />
+    <article class="prose">
+      <h1 style="margin-top:20px">{d.title}</h1>
+      <p class="guide-meta">By the {SITE.name} team · Updated {fmtDate(d.updated)}</p>
+
+      <div class="answer-box">
+        <p><strong>Short answer:</strong> {d.answer}</p>
+      </div>
+
+      {toc.length > 2 && (
+        <nav class="toc" aria-label="On this page">
+          <p>On this page</p>
+          <ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      )}
+
+      <Content />
+
+      {firstTool && (
+        <div class="cta-box">
+          <p><strong>Get your own number.</strong> {firstTool.blurb}</p>
+          <a class="btn" href={url(`/calculators/${firstTool.slug}/`)}>Open the {firstTool.title} →</a>
+        </div>
+      )}
+
+      {d.faqs.length > 0 && (
+        <section>
+          <h2 id="faq">Frequently asked questions</h2>
+          {d.faqs.map((f) => (<details><summary>{f.q}</summary><p>{f.a}</p></details>))}
+        </section>
+      )}
+    </article>
+    <Related tools={d.relatedTools} guides={d.relatedGuides} exclude={guide.id} />
+  </div>
+</Base>

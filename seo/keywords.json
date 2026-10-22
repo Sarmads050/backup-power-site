@@ -1,0 +1,57 @@
+{
+  "_about": "Keyword map. One primary keyword per page (never two pages with the same primary, so pages don't compete). The SEO check (scripts/seo-check.mjs) makes sure the primary keyword appears in the page's title, H1, meta description and opening text, and fails the build if not. Secondary keywords are used naturally in headings and FAQs.",
+  "pages": {
+    "/": {
+      "primary": "backup power",
+      "secondary": ["power station calculator", "solar generator calculator", "power outage backup"]
+    },
+    "/calculators/": {
+      "primary": "backup power calculators",
+      "secondary": ["power station calculators", "solar calculators"]
+    },
+    "/calculators/power-station-size/": {
+      "primary": "power station size calculator",
+      "secondary": ["what size power station do I need", "solar generator size calculator", "how many watt-hours do I need", "surge watts"]
+    },
+    "/calculators/solar-charging-time/": {
+      "primary": "solar charging time calculator",
+      "secondary": ["how long to charge a power station with solar", "peak sun hours", "solar panel size for power station"]
+    },
+    "/calculators/appliance-wattage/": {
+      "primary": "appliance wattage chart",
+      "secondary": ["running and starting watts", "how many watts does a refrigerator use", "household appliance watts"]
+    },
+    "/calculators/generator-vs-power-station-cost/": {
+      "primary": "generator vs power station",
+      "secondary": ["power station vs generator cost", "cost to run a generator per hour", "is a power station cheaper than a generator"]
+    },
+    "/calculators/cpap-battery-runtime/": {
+      "primary": "CPAP battery calculator",
+      "secondary": ["how long will a power station run a CPAP", "CPAP power consumption", "CPAP battery backup"]
+    },
+    "/guides/": {
+      "primary": "backup power guides",
+      "secondary": ["power station guides", "power outage guides"]
+    },
+    "/guides/power-station-for-refrigerator/": {
+      "primary": "power station for a refrigerator",
+      "secondary": ["what size power station to run a refrigerator", "how long will a power station run a fridge", "refrigerator starting watts"]
+    },
+    "/guides/watts-vs-watt-hours/": {
+      "primary": "watts vs watt-hours",
+      "secondary": ["what does Wh mean on a power station", "W vs Wh", "how to read power station specs"]
+    },
+    "/guides/lifepo4-vs-lithium-ion-power-station/": {
+      "primary": "LiFePO4 vs lithium-ion power station",
+      "secondary": ["LiFePO4 vs NMC", "power station battery types", "power station charge cycles"]
+    },
+    "/guides/power-station-for-sump-pump/": {
+      "primary": "power station for a sump pump",
+      "secondary": ["can a power station run a sump pump", "sump pump battery backup", "sump pump starting watts"]
+    },
+    "/guides/power-station-space-heater/": {
+      "primary": "power station run a space heater",
+      "secondary": ["can a portable power station run a space heater", "space heater watts", "heat during power outage"]
+    }
+  }
+}

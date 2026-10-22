@@ -2,9 +2,11 @@
 import Base from '../../../layouts/Base.astro';
 import data from '../../../data/appliances.json';
 import { SITE, url } from '../../../lib/site.js';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Related from '../../../components/Related.astro';
 
 const title = 'Appliance Wattage Chart: Running & Starting Watts';
-const description = 'Typical running watts, starting (surge) watts and daily energy use for common household appliances — fridges, pumps, AC, CPAP and more — for sizing a power station or generator.';
+const description = 'Appliance wattage chart with running watts, starting watts and daily energy use for 28 household appliances, to size a power station or generator.';
 
 const fmt = (n) => Math.round(n).toLocaleString('en-US');
 const dailyWh = (it) => it.running * (it.qty ?? 1) * it.hours * it.duty;
@@ -32,9 +34,7 @@ const schema = {
 ---
 <Base title={title} description={description} schema={schema}>
   <div class="wrap">
-    <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <a href={url('/')}>Home</a> › <a href={url('/calculators/')}>Calculators</a> › Appliance Wattage Chart
-    </nav>
+    <Breadcrumbs items={[{ name: 'Calculators', href: '/calculators/' }, { name: 'Appliance Wattage Chart' }]} />
     <p class="eyebrow" style="margin-top:16px">Reference chart</p>
     <h1>Appliance Wattage Chart</h1>
     <p class="lede">Typical running and starting watts for {data.categories.reduce((n, c) => n + c.items.length, 0)} common household appliances, plus how much energy each uses in a typical day.</p>
@@ -78,5 +78,6 @@ const schema = {
       {faqs.map((f) => (<details><summary>{f.q}</summary><p>{f.a}</p></details>))}
       <p style="color:var(--ink-2);font-size:.9rem;margin-top:24px">Last reviewed October 2026 · {SITE.name}</p>
     </article>
+    <Related tools={['power-station-size','cpap-battery-runtime']} guides={['power-station-for-refrigerator','power-station-space-heater']} exclude="appliance-wattage" />
   </div>
 </Base>
