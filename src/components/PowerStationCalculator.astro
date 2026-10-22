@@ -1,0 +1,244 @@
+---
+import data from '../data/appliances.json';
+---
+<section class="calc" id="calculator" aria-label="Power station size calculator">
+  <div class="calc-grid">
+    <div class="calc-inputs">
+      <div class="step">
+        <span class="step-num">1</span>
+        <div>
+          <h2 class="step-title">Pick what you want to keep running</h2>
+          <p class="step-help">Tick each appliance, then adjust how many and how many hours a day. Wattages are typical figures — if you know your device's watts (check its label), type them in.</p>
+        </div>
+      </div>
+
+      {data.categories.map((cat) => (
+        <fieldset class="group">
+          <legend>{cat.label}</legend>
+          <div class="row row-head" aria-hidden="true">
+            <span></span><span>Appliance</span><span>Qty</span><span>Hrs/day</span><span>Watts</span>
+          </div>
+          {cat.items.map((it) => (
+            <div class="row" data-row
+              data-surge={it.surge} data-duty={it.duty}>
+              <input type="checkbox" class="use" id={`use-${it.id}`} checked={it.default} aria-label={`Include ${it.name}`} />
+              <label for={`use-${it.id}`} class="name">
+                {it.name}
+                {it.surge > it.running && <small>starts at ~{it.surge.toLocaleString('en-US')} W</small>}
+              </label>
+              <input type="number" class="qty" min="0" max="20" step="1" value={it.qty ?? 1} aria-label={`${it.name} quantity`} inputmode="numeric" />
+              <input type="number" class="hours" min="0" max="24" step="0.25" value={it.hours} aria-label={`${it.name} hours per day`} inputmode="decimal" />
+              <input type="number" class="watts" min="0" max="5000" step="5" value={it.running} aria-label={`${it.name} running watts`} inputmode="numeric" />
+            </div>
+          ))}
+        </fieldset>
+      ))}
+
+      <fieldset class="group" id="custom-group">
+        <legend>Your own devices</legend>
+        <div id="custom-rows"></div>
+        <button type="button" class="btn btn-ghost" id="add-custom">+ Add a device</button>
+      </fieldset>
+
+      <div class="step">
+        <span class="step-num">2</span>
+        <div>
+          <h2 class="step-title">How long must it last?</h2>
+        </div>
+      </div>
+      <div class="opts card">
+        <label class="opt">
+          <span>Days of backup without the grid</span>
+          <select id="days">
+            <option value="0.5">Half a day (12 hours)</option>
+            <option value="1" selected>1 day</option>
+            <option value="2">2 days</option>
+            <option value="3">3 days</option>
+            <option value="5">5 days</option>
+            <option value="7">1 week</option>
+          </select>
+        </label>
+        <label class="opt opt-check">
+          <input type="checkbox" id="use-solar" />
+          <span>I'll recharge with solar panels during the outage</span>
+        </label>
+        <div class="solar-opts" id="solar-opts" hidden>
+          <label class="opt">
+            <span>Solar panel watts (total)</span>
+            <input type="number" id="solar-watts" min="0" max="5000" step="50" value="400" inputmode="numeric" />
+          </label>
+          <label class="opt">
+            <span>Good sun hours per day</span>
+            <input type="number" id="sun-hours" min="0" max="10" step="0.5" value="4" inputmode="decimal" />
+          </label>
+          <p class="hint">Most of the US gets about 3–6 good sun hours a day; winter and cloudy days are lower.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="calc-results" aria-live="polite">
+      <div class="results card">
+        <p class="eyebrow">Your result</p>
+        <div class="big" id="r-capacity">—</div>
+        <p class="big-label">battery capacity you should look for</p>
+
+        <div class="class-box" id="r-class"></div>
+
+        <dl class="specs">
+          <div><dt>Continuous output</dt><dd id="r-output">—</dd></div>
+          <div><dt>Surge / peak output</dt><dd id="r-surge">—</dd></div>
+          <div><dt>Energy used per day</dt><dd id="r-daily">—</dd></div>
+          <div><dt>Everything on at once</dt><dd id="r-running">—</dd></div>
+        </dl>
+
+        <p class="solar-line" id="r-solar" hidden></p>
+
+        <h3>How long common sizes would last</h3>
+        <table class="runtime">
+          <tbody id="r-runtime"></tbody>
+        </table>
+
+        <p class="fine">Look for a power station whose <strong>capacity (Wh)</strong>, <strong>continuous output (W)</strong> and <strong>surge (W)</strong> are all at or above these numbers. Includes 15% inverter loss and a 20% safety buffer.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<template id="custom-row-tpl">
+  <div class="row custom" data-row data-surge="0" data-duty="1">
+    <input type="checkbox" class="use" checked aria-label="Include this device" />
+    <input type="text" class="name-input" placeholder="Device name" aria-label="Device name" />
+    <input type="number" class="qty" min="0" max="20" step="1" value="1" aria-label="Quantity" inputmode="numeric" />
+    <input type="number" class="hours" min="0" max="24" step="0.25" value="2" aria-label="Hours per day" inputmode="decimal" />
+    <input type="number" class="watts" min="0" max="5000" step="5" value="100" aria-label="Running watts" inputmode="numeric" />
+  </div>
+</template>
+
+<script>
+  import { sizePowerStation, runtimeHours, formatHours } from '../lib/powerMath.js';
+
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const fmt = (n) => Math.round(n).toLocaleString('en-US');
+  const COMMON_SIZES = [500, 1000, 2000, 3600];
+
+  function readRows() {
+    return $$('[data-row]').map((row) => ({
+      running: Number($('.watts', row).value) || 0,
+      surge: Math.max(Number(row.dataset.surge) || 0, Number($('.watts', row).value) || 0),
+      duty: Number(row.dataset.duty) || 1,
+      hours: Number($('.hours', row).value) || 0,
+      qty: $('.use', row).checked ? Number($('.qty', row).value) || 0 : 0,
+    }));
+  }
+
+  function update() {
+    const useSolar = $('#use-solar').checked;
+    $('#solar-opts').hidden = !useSolar;
+    const r = sizePowerStation(readRows(), {
+      days: $('#days').value,
+      solarWatts: useSolar ? $('#solar-watts').value : 0,
+      sunHours: useSolar ? $('#sun-hours').value : 0,
+    });
+
+    $$('[data-row]').forEach((row) => row.classList.toggle('off', !$('.use', row).checked));
+
+    if (!r.dailyWh) {
+      $('#r-capacity').textContent = '—';
+      $('#r-class').innerHTML = '<p>Tick at least one appliance to see your result.</p>';
+      ['#r-output', '#r-surge', '#r-daily', '#r-running'].forEach((s) => ($(s).textContent = '—'));
+      $('#r-runtime').innerHTML = '';
+      $('#r-solar').hidden = true;
+      return;
+    }
+
+    $('#r-capacity').textContent = `${fmt(r.capacityWh)} Wh`;
+    $('#r-output').textContent = `${fmt(r.outputW)} W`;
+    $('#r-surge').textContent = `${fmt(r.surgeW)} W`;
+    $('#r-daily').textContent = `${fmt(r.dailyWh)} Wh`;
+    $('#r-running').textContent = `${fmt(r.runningW)} W`;
+
+    const c = r.sizeClass;
+    $('#r-class').innerHTML = c
+      ? `<strong>${c.label}</strong> <span class="range">${c.range}</span><p>${c.fit}</p>`
+      : '';
+
+    const solar = $('#r-solar');
+    if (useSolar && r.solarWhPerDay > 0) {
+      solar.hidden = false;
+      solar.textContent = `Your panels should refill about ${fmt(r.solarWhPerDay)} Wh a day — roughly ${Math.round(r.solarCoverage * 100)}% of what you use.`;
+    } else solar.hidden = true;
+
+    $('#r-runtime').innerHTML = COMMON_SIZES.map((wh) => {
+      const enough = wh >= r.capacityWh;
+      return `<tr class="${enough ? 'ok' : ''}"><th>${fmt(wh)} Wh</th><td>${formatHours(runtimeHours(wh, r.dailyWh))}</td></tr>`;
+    }).join('');
+  }
+
+  $('#add-custom').addEventListener('click', () => {
+    const node = $('#custom-row-tpl').content.firstElementChild.cloneNode(true);
+    $('#custom-rows').appendChild(node);
+    $('.name-input', node).focus();
+    update();
+  });
+
+  document.addEventListener('input', (e) => { if (e.target.closest('#calculator')) update(); });
+  document.addEventListener('change', (e) => { if (e.target.closest('#calculator')) update(); });
+  update();
+</script>
+
+<style>
+  .calc { margin: 24px 0 8px; }
+  .calc-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+  @media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+  .calc-results { position: sticky; top: 16px; }
+  @media (max-width: 900px) { .calc-results { position: static; order: -1; } }
+
+  .step { display: flex; gap: 12px; align-items: flex-start; margin: 8px 0 12px; }
+  .step-num { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--brand); color: var(--brand-ink); display: grid; place-items: center; font-weight: 700; }
+  .step-title { margin: 2px 0 4px; font-size: 1.25rem; }
+  .step-help { color: var(--ink-2); font-size: .95rem; margin: 0; }
+
+  .group { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 8px 14px 14px; margin: 0 0 14px; }
+  .group legend { font-family: var(--font-head); font-weight: 700; padding: 0 6px; }
+  .row { display: grid; grid-template-columns: 24px minmax(0, 1fr) 58px 70px 78px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px dashed var(--line); }
+  .row:last-child { border-bottom: 0; }
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 24px 1fr 1fr 1fr; row-gap: 6px; }
+    .row > :nth-child(2) { grid-column: 2 / -1; }
+    .row > :nth-child(3) { grid-column: 2; }
+    .row-head > :nth-child(2) { display: none; }
+    .row-head > :nth-child(3) { grid-column: 2; }
+  }
+  .row-head { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); font-weight: 700; padding-bottom: 2px; }
+  .row.off .name, .row.off input[type=number] { opacity: .45; }
+  .name { font-size: .98rem; line-height: 1.3; cursor: pointer; }
+  .name small { display: block; color: var(--ink-2); font-size: .8rem; }
+  .row input[type=number], .row input[type=text], .opt input, .opt select {
+    width: 100%; font: inherit; font-size: .95rem; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink);
+  }
+  .row input[type=checkbox], .opt-check input { width: 20px; height: 20px; accent-color: var(--brand); }
+  #custom-group .btn { margin-top: 10px; font-size: .95rem; padding: 8px 14px; }
+
+  .opts { display: grid; gap: 14px; }
+  .opt { display: grid; gap: 6px; font-weight: 600; }
+  .opt-check { display: flex; align-items: center; gap: 10px; }
+  .solar-opts { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+  .solar-opts[hidden] { display: none; }
+  .hint { grid-column: 1 / -1; font-size: .9rem; color: var(--ink-2); margin: 0; }
+
+  .results { border-top: 5px solid var(--accent); }
+  .big { font-family: var(--font-head); font-size: 2.8rem; font-weight: 700; line-height: 1; margin-top: 8px; }
+  .big-label { color: var(--ink-2); margin: 4px 0 14px; }
+  .class-box { background: var(--accent-soft); border-radius: 10px; padding: 12px; font-size: .95rem; }
+  .class-box p { margin: 6px 0 0; }
+  .class-box .range { color: var(--ink-2); white-space: nowrap; }
+  .specs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+  .specs dt { font-size: .82rem; color: var(--ink-2); }
+  .specs dd { margin: 0; font-weight: 700; font-size: 1.15rem; }
+  .solar-line { font-size: .92rem; background: var(--surface-2); padding: 10px; border-radius: 8px; }
+  .results h3 { font-size: 1rem; margin: 12px 0 4px; }
+  .runtime th, .runtime td { padding: 6px 4px; }
+  .runtime tr.ok td { color: var(--good); font-weight: 700; }
+  .fine { font-size: .85rem; color: var(--ink-2); margin: 12px 0 0; }
+</style>

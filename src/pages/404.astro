@@ -1,0 +1,11 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site.js';
+---
+<Base title="Page not found" noindex={true}>
+  <div class="wrap" style="padding:48px 16px">
+    <h1>That page ran out of battery.</h1>
+    <p class="lede">We couldn't find what you were looking for.</p>
+    <a class="btn" href={url('/calculators/')}>See all calculators</a>
+  </div>
+</Base>

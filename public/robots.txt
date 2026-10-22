@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sarmads050.github.io/backup-power-site/sitemap-index.xml

@@ -1,0 +1,13 @@
+---
+import Base from './Base.astro';
+const { title, description, updated = 'October 2026' } = Astro.props;
+---
+<Base title={title} description={description}>
+  <div class="wrap">
+    <article class="prose" style="margin-top:32px">
+      <h1>{title}</h1>
+      <p style="color:var(--ink-2);font-size:.9rem">Last updated: {updated}</p>
+      <slot />
+    </article>
+  </div>
+</Base>

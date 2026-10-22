@@ -1,0 +1,20 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE, url } from '../lib/site.js';
+---
+<Page title={`About ${SITE.name}`} description={`What ${SITE.name} is, how our calculators work and how we make money.`}>
+  <p>{SITE.name} is an independent website that helps people work out how much backup power they actually need — for a power outage, a camping trip, an RV or an off-grid cabin.</p>
+  <h2>What we do</h2>
+  <p>We build free calculators and plain-English guides. Each calculator shows how it gets its answer, uses typical appliance figures you can override with your own, and adds the real-world losses that spec sheets leave out.</p>
+  <h2>How we keep it honest</h2>
+  <ul>
+    <li>Our maths is written out on every calculator page, so you can check it.</li>
+    <li>We say clearly when a number is an estimate and when you should check your own equipment.</li>
+    <li>We review pages when products, prices or guidance change, and show the date of the last review.</li>
+    <li>We never accept payment to change a calculator's result.</li>
+  </ul>
+  <h2>How we make money</h2>
+  <p>Some pages show ads, and some links to stores are affiliate links, which means we may earn a small commission if you buy — at no extra cost to you. Read our <a href={url('/affiliate-disclosure/')}>affiliate disclosure</a> for details.</p>
+  <h2>Get in touch</h2>
+  <p>Spotted a mistake or want a calculator we don't have yet? <a href={url('/contact/')}>Contact us</a>.</p>
+</Page>

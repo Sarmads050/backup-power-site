@@ -1,0 +1,23 @@
+---
+import { TOOLS } from '../data/tools.js';
+import { url } from '../lib/site.js';
+---
+<div class="grid">
+  {TOOLS.map((t) => t.live ? (
+    <a class="card tool-card" href={url(`/calculators/${t.slug}/`)}>
+      <h3>{t.title}</h3>
+      <p>{t.blurb}</p>
+      <span class="go">Open calculator →</span>
+    </a>
+  ) : (
+    <div class="card tool-card is-soon">
+      <h3>{t.title}</h3>
+      <p>{t.blurb}</p>
+      <span class="soon">Coming soon</span>
+    </div>
+  ))}
+</div>
+<style>
+  .go { font-weight: 700; color: var(--brand); }
+  .is-soon { opacity: .75; box-shadow: none; }
+</style>

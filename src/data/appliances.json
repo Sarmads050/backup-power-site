@@ -1,0 +1,63 @@
+{
+  "_about": "Typical US 120V appliance wattages. running = watts while on; surge = brief startup watts (motors/compressors); duty = share of the time the appliance actually draws power while 'on' (a fridge compressor cycles). Values are conservative typical figures; real appliances vary — the label on the device wins.",
+  "categories": [
+    {
+      "id": "kitchen",
+      "label": "Kitchen",
+      "items": [
+        { "id": "fridge", "name": "Refrigerator (full size)", "running": 200, "surge": 1200, "duty": 0.33, "hours": 24, "default": true },
+        { "id": "chest-freezer", "name": "Chest freezer", "running": 100, "surge": 800, "duty": 0.4, "hours": 24 },
+        { "id": "mini-fridge", "name": "Mini fridge", "running": 80, "surge": 400, "duty": 0.4, "hours": 24 },
+        { "id": "microwave", "name": "Microwave (1,000 W cooking)", "running": 1500, "surge": 1500, "duty": 1, "hours": 0.25 },
+        { "id": "coffee-maker", "name": "Drip coffee maker", "running": 900, "surge": 900, "duty": 1, "hours": 0.2 },
+        { "id": "kettle", "name": "Electric kettle", "running": 1500, "surge": 1500, "duty": 1, "hours": 0.1 },
+        { "id": "toaster", "name": "Toaster", "running": 900, "surge": 900, "duty": 1, "hours": 0.1 },
+        { "id": "slow-cooker", "name": "Slow cooker (low)", "running": 200, "surge": 200, "duty": 0.7, "hours": 6 }
+      ]
+    },
+    {
+      "id": "essentials",
+      "label": "Lights, phones & internet",
+      "items": [
+        { "id": "led-bulb", "name": "LED light bulb", "running": 10, "surge": 10, "duty": 1, "hours": 5, "qty": 4, "default": true },
+        { "id": "router", "name": "Wi-Fi router + modem", "running": 20, "surge": 20, "duty": 1, "hours": 24, "default": true },
+        { "id": "phone", "name": "Phone charging", "running": 15, "surge": 15, "duty": 1, "hours": 2, "qty": 2, "default": true },
+        { "id": "laptop", "name": "Laptop", "running": 60, "surge": 60, "duty": 1, "hours": 6 },
+        { "id": "desktop", "name": "Desktop PC + monitor", "running": 250, "surge": 250, "duty": 1, "hours": 6 },
+        { "id": "tv", "name": "TV (50-inch LED)", "running": 100, "surge": 100, "duty": 1, "hours": 4 },
+        { "id": "radio", "name": "Weather / AM-FM radio", "running": 5, "surge": 5, "duty": 1, "hours": 12 }
+      ]
+    },
+    {
+      "id": "comfort",
+      "label": "Heating & cooling",
+      "items": [
+        { "id": "box-fan", "name": "Box fan", "running": 75, "surge": 100, "duty": 1, "hours": 8 },
+        { "id": "ceiling-fan", "name": "Ceiling fan", "running": 60, "surge": 80, "duty": 1, "hours": 8 },
+        { "id": "window-ac", "name": "Window AC (8,000 BTU)", "running": 700, "surge": 1800, "duty": 0.6, "hours": 8 },
+        { "id": "furnace-fan", "name": "Gas furnace blower (1/2 HP)", "running": 800, "surge": 2350, "duty": 0.5, "hours": 12 },
+        { "id": "space-heater", "name": "Space heater", "running": 1500, "surge": 1500, "duty": 0.5, "hours": 6 },
+        { "id": "electric-blanket", "name": "Electric blanket", "running": 100, "surge": 100, "duty": 1, "hours": 8 }
+      ]
+    },
+    {
+      "id": "medical",
+      "label": "Medical & sleep",
+      "items": [
+        { "id": "cpap", "name": "CPAP (no humidifier)", "running": 40, "surge": 40, "duty": 1, "hours": 8 },
+        { "id": "cpap-humid", "name": "CPAP with heated humidifier", "running": 90, "surge": 90, "duty": 1, "hours": 8 },
+        { "id": "oxygen", "name": "Home oxygen concentrator", "running": 300, "surge": 600, "duty": 1, "hours": 24 }
+      ]
+    },
+    {
+      "id": "house",
+      "label": "House & garage",
+      "items": [
+        { "id": "sump-pump", "name": "Sump pump (1/3 HP)", "running": 800, "surge": 1300, "duty": 0.3, "hours": 24 },
+        { "id": "washer", "name": "Washing machine", "running": 500, "surge": 1150, "duty": 1, "hours": 1 },
+        { "id": "garage-door", "name": "Garage door opener", "running": 550, "surge": 1100, "duty": 1, "hours": 0.05 },
+        { "id": "power-tools", "name": "Circular saw", "running": 1400, "surge": 2300, "duty": 1, "hours": 0.25 }
+      ]
+    }
+  ]
+}

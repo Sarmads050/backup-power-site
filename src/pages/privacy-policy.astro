@@ -1,0 +1,32 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE, url } from '../lib/site.js';
+---
+<Page title="Privacy Policy" description={`How ${SITE.name} handles your information.`}>
+  <p>This policy explains what information {SITE.name} collects when you use this website and how it is used.</p>
+
+  <h2>Calculators</h2>
+  <p>Our calculators run in your browser. The appliances and numbers you enter are not sent to us or stored on our servers.</p>
+
+  <h2>Information collected automatically</h2>
+  <p>Like most websites, our hosting provider may log basic technical data such as your IP address, browser type and the pages you visit, to keep the site secure and working. We may use privacy-friendly analytics to understand which pages are useful. This data is used in aggregate and is not used to identify you.</p>
+
+  <h2>Advertising and cookies</h2>
+  <p>We may show ads served by Google and other advertising partners. Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites. Google's use of advertising cookies enables it and its partners to serve ads to you based on your visits to this and/or other sites on the internet.</p>
+  <p>You can opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" rel="nofollow noopener">Google Ads Settings</a>, or opt out of some third-party vendors' use of cookies at <a href="https://www.aboutads.info/choices/" rel="nofollow noopener">aboutads.info</a>. Where the law requires it, we will ask for your consent before setting advertising cookies.</p>
+
+  <h2>Affiliate links</h2>
+  <p>When you click an affiliate link, the retailer may set a cookie to record that you came from our site. That retailer's own privacy policy applies to anything you do on their website. See our <a href={url('/affiliate-disclosure/')}>affiliate disclosure</a>.</p>
+
+  <h2>Contact forms and email</h2>
+  <p>If you email us, we use your message and email address only to reply to you.</p>
+
+  <h2>Children</h2>
+  <p>This site is not directed at children under 13, and we do not knowingly collect their information.</p>
+
+  <h2>Your rights</h2>
+  <p>Depending on where you live (for example California or the EU/UK), you may have the right to ask what personal data we hold about you and to have it deleted. <a href={url('/contact/')}>Contact us</a> to make a request.</p>
+
+  <h2>Changes</h2>
+  <p>We may update this policy as the site changes. The date at the top shows the latest version.</p>
+</Page>

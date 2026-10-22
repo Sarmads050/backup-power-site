@@ -1,0 +1,17 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE } from '../lib/site.js';
+---
+<Page title="Terms of Use" description={`Terms for using ${SITE.name}.`}>
+  <p>By using {SITE.name} you agree to these terms.</p>
+  <h2>Estimates, not guarantees</h2>
+  <p>Our calculators and guides give estimates based on typical figures. Real appliances, batteries and solar panels vary, and conditions such as temperature and battery age affect performance. Always check manufacturer specifications before buying or relying on equipment.</p>
+  <h2>Not professional advice</h2>
+  <p>Nothing on this site is electrical, medical or financial advice. Connecting backup power to a home's wiring must be done by a licensed electrician using an approved transfer switch. For medical equipment, follow the advice of your equipment supplier or doctor.</p>
+  <h2>Links to other sites</h2>
+  <p>We link to retailers and other websites. We are not responsible for their content, prices or policies.</p>
+  <h2>Liability</h2>
+  <p>To the extent allowed by law, {SITE.name} is not liable for losses arising from use of the site or reliance on its estimates.</p>
+  <h2>Changes</h2>
+  <p>We may update these terms from time to time.</p>
+</Page>

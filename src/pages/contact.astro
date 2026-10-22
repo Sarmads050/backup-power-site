@@ -1,0 +1,10 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE } from '../lib/site.js';
+---
+<Page title="Contact" description={`How to contact ${SITE.name}.`}>
+  <p>We read every message — especially corrections. If a calculator gave you a result that looks wrong, tell us which appliances and settings you used so we can check it.</p>
+  {SITE.contactEmail
+    ? <p>Email: <a href={`mailto:${SITE.contactEmail}`}>{SITE.contactEmail}</a></p>
+    : <p class="note">Our contact email is being set up and will appear here shortly.</p>}
+</Page>

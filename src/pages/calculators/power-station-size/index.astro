@@ -1,0 +1,124 @@
+---
+import Base from '../../../layouts/Base.astro';
+import PowerStationCalculator from '../../../components/PowerStationCalculator.astro';
+import { SITE, url } from '../../../lib/site.js';
+
+const title = 'Power Station Size Calculator: How Many Wh Do You Need?';
+const description = 'Pick your appliances and get the battery capacity (Wh), continuous output and surge watts your portable power station or solar generator needs — free, no sign-up.';
+
+const faqs = [
+  {
+    q: 'What size power station do I need to run a refrigerator?',
+    a: 'A typical full-size fridge uses around 1,100–1,900 Wh a day because its compressor cycles on and off, and it can need about 1,200 W for a moment when the compressor starts. For one day, after inverter loss and a safety buffer, that means roughly a 2,000–2,500 Wh power station with at least 1,200 W of surge. Older or larger fridges can use more — check the yellow EnergyGuide label (kWh per year ÷ 365 × 1,000 = Wh per day).',
+  },
+  {
+    q: 'What is the difference between Wh and W?',
+    a: 'Watts (W) are how much power something pulls at one moment. Watt-hours (Wh) are how much energy is stored or used over time. A 100 W TV running for 3 hours uses 300 Wh. A power station needs enough W to start and run your devices, and enough Wh to keep them going for as long as you need.',
+  },
+  {
+    q: 'Why is my result bigger than the total of my appliances?',
+    a: 'The calculator adds about 15% for the energy lost when the battery converts DC power into normal AC wall power, plus a 20% safety buffer for cold weather, battery ageing and appliances that use more than their typical rating.',
+  },
+  {
+    q: 'What does surge watts mean?',
+    a: 'Appliances with motors or compressors — fridges, pumps, AC units, power tools — draw two to three times their normal power for a second or two when they start. Your power station’s surge (or peak) rating must cover that start-up spike, or it will shut off.',
+  },
+  {
+    q: 'Can solar panels keep a power station charged during an outage?',
+    a: 'Partly, and sometimes fully. A 400 W panel set in about 4 good sun hours typically adds 1,000–1,200 Wh a day after real-world losses. Turn on the solar option in the calculator to see how much of your daily use it would cover.',
+  },
+  {
+    q: 'Can I use a power station for a CPAP or oxygen concentrator?',
+    a: 'Many people do, but medical devices vary a lot. Check the exact wattage in your device’s manual, plan for extra capacity, and talk to your equipment supplier or doctor about a backup plan. Never rely on a single battery for life-sustaining equipment.',
+  },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Power Station Size Calculator',
+    url: new URL(url('/calculators/power-station-size/'), Astro.site).href,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: new URL(url('/'), Astro.site).href },
+      { '@type': 'ListItem', position: 2, name: 'Calculators', item: new URL(url('/calculators/'), Astro.site).href },
+      { '@type': 'ListItem', position: 3, name: 'Power Station Size Calculator' },
+    ],
+  },
+];
+---
+<Base title={title} description={description} schema={schema}>
+  <div class="wrap">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href={url('/')}>Home</a> › <a href={url('/calculators/')}>Calculators</a> › Power Station Size
+    </nav>
+    <p class="eyebrow" style="margin-top:16px">Calculator</p>
+    <h1>Power Station Size Calculator</h1>
+    <p class="lede">Tell us what you want to keep running and for how long. You'll get the three numbers that matter when you shop: <strong>battery capacity (Wh)</strong>, <strong>continuous output (W)</strong> and <strong>surge output (W)</strong>.</p>
+
+    <PowerStationCalculator />
+
+    <article class="prose">
+      <h2>How this calculator works</h2>
+      <p>For every appliance you tick, we multiply its running watts by how many you have and how many hours a day it is on. Fridges, freezers and pumps don't run non-stop — their motors cycle on and off — so we only count the share of time they actually draw power. That gives your <strong>daily energy use in watt-hours (Wh)</strong>.</p>
+      <p>We then:</p>
+      <ol>
+        <li>Multiply by the number of backup days you chose (minus whatever your solar panels put back each day).</li>
+        <li>Divide by 0.85, because roughly 15% of stored energy is lost turning battery power into normal 120 V wall power.</li>
+        <li>Add a 20% buffer so cold weather, an ageing battery or a hungrier-than-average appliance doesn't leave you in the dark.</li>
+      </ol>
+      <p>For output, we add up everything that could be on at the same time and add 25% headroom. For surge, we add the single biggest motor start-up on top, since two motors rarely start in the exact same second.</p>
+
+      <h2>A quick example</h2>
+      <p>Say you want a fridge, four LED bulbs, your Wi-Fi and two phones for one day. The fridge uses about 1,600 Wh across 24 hours, the lights 200 Wh, the router 480 Wh and the phones 60 Wh — about 2,320 Wh in total. After inverter loss and the safety buffer, you'd want a power station of roughly <strong>3,300 Wh</strong> with at least <strong>400 W</strong> continuous and <strong>1,300 W</strong> surge. Drop the router at night or add a solar panel and that number falls quickly.</p>
+
+      <div class="note">
+        <strong>Tip:</strong> The most accurate number is on your appliance. Look for a label that says watts (W), or amps (A) — multiply amps by 120 to get watts. For fridges, the yellow EnergyGuide label shows kWh per year: divide by 365 and multiply by 1,000 to get Wh per day.
+      </div>
+
+      <h2>What these numbers mean when you shop</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Spec on the box</th><th>What it means</th><th>Your target</th></tr></thead>
+          <tbody>
+            <tr><td>Capacity (Wh)</td><td>How much energy the battery stores</td><td>At or above your result</td></tr>
+            <tr><td>Rated / continuous output (W)</td><td>How much it can power at once, all day</td><td>At or above "continuous output"</td></tr>
+            <tr><td>Surge / peak (W)</td><td>The short burst it can give when a motor starts</td><td>At or above "surge"</td></tr>
+            <tr><td>Battery chemistry</td><td>LiFePO4 (LFP) batteries typically last thousands of charge cycles; older NMC packs fewer</td><td>Prefer LiFePO4 for home backup</td></tr>
+            <tr><td>Solar input (W)</td><td>How fast panels can refill it</td><td>Matters if outages last more than a day</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Frequently asked questions</h2>
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+
+      <h2>Safety notes</h2>
+      <ul>
+        <li>Results are estimates based on typical appliance ratings. Real devices vary.</li>
+        <li>Most portable power stations can't run 240 V appliances like central AC, electric dryers or many well pumps.</li>
+        <li>Connecting any battery or generator to your home's wiring needs a proper transfer switch installed by a licensed electrician.</li>
+        <li>For medical equipment, confirm the requirements with your equipment supplier or doctor.</li>
+      </ul>
+      <p style="color:var(--ink-2);font-size:.9rem">Last reviewed October 2026 · {SITE.name}</p>
+    </article>
+  </div>
+</Base>

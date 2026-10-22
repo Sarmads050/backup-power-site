@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolGrid from '../components/ToolGrid.astro';
+import { SITE, url } from '../lib/site.js';
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  url: new URL(url('/'), Astro.site).href,
+  description: SITE.description,
+};
+---
+<Base schema={schema}>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Power outage? Camping? Off-grid?</p>
+      <h1>Find the right size backup battery — in two minutes.</h1>
+      <p class="lede">Free calculators that turn "will it run my fridge?" into real numbers: how many watt-hours, how many watts, and how long it will last. No sign-up, no sales pitch.</p>
+      <a class="btn" href={url('/calculators/power-station-size/')}>Size my power station →</a>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <h2>Calculators</h2>
+    <ToolGrid />
+
+    <section class="prose">
+      <h2>Why we built this</h2>
+      <p>Portable power stations and solar generators are sold on big, confusing numbers. A box that says "2,000 W" might hold far less energy than you need for a night with your fridge, while a smaller one might be plenty if you only want lights and your phone. Our calculators use typical appliance wattages, real-world inverter losses and a safety buffer so you can compare models on the three specs that matter.</p>
+      <p>Every result is an estimate. Your appliance labels always beat our averages — and every calculator lets you type in your own numbers.</p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .hero { background: var(--surface); border-bottom: 1px solid var(--line); padding: 48px 0 56px; }
+  .hero h1 { max-width: 18em; }
+</style>
