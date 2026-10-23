@@ -75,7 +75,7 @@ Har kaam ke baad isay update kiya jata hai.
 4. Jis topic ka PR khula ho, agli dafa woh dobara nahi likha jata.
 
 **Topic queue (8, facts haath se check kiye):** store a power station, window AC, chest freezer, laptop, electric blanket, coffee maker, how long to charge, home backup.
-**Models:** `gemini-2.5-flash` → `gemini-flash-latest` → `gemini-2.5-flash-lite` (GitHub repo variable `GEMINI_MODELS` se badal sakte hain).
+**Models:** script har run par Google se live model list leta hai aur behtareen text "Flash" model khud chunta hai (purane hard-coded naam 2026-10-23 ko 404 dene lage the). Repo variable `GEMINI_MODELS` set ho to woh pehle try hote hain.
 **User ka ek-dafa setup:** `GEMINI_API_KEY` secret + Actions ko PR banane ki ijazat (Settings → Actions → General).
 **Test:** mock jawab se poora flow test kiya (kharab draft ruk gaya, achha draft build + SEO pass, queue update, skip logic).
 

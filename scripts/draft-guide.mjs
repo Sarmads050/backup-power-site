@@ -18,7 +18,7 @@ const QUEUE_PATH = 'seo/topic-queue.json';
 const KEYWORDS_PATH = 'seo/keywords.json';
 const GUIDES_DIR = 'src/content/guides';
 const MAX_ATTEMPTS = 3;
-const MODELS = (process.env.GEMINI_MODELS || 'gemini-2.5-flash,gemini-flash-latest,gemini-2.5-flash-lite')
+const MODELS = (process.env.GEMINI_MODELS || 'gemini-flash-latest,gemini-flash-lite-latest')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const SITE_NAME = 'BackupWatts';
 
@@ -122,6 +122,44 @@ const SCHEMA = {
 
 // ---------- 4. Call Gemini ----------
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let candidateModels = null; // filled from Google's live model list
+let workingModel = '';
+
+// Google renames/retires models often, so instead of hard-coding names we ask
+// the API which models this key can use right now and pick the best text
+// "Flash" model (fast, free-tier friendly). GEMINI_MODELS, if set, goes first.
+export function rankModels(names) {
+  const bad = /(image|tts|audio|live|embed|vision|robotics|computer|native|learnlm|gemma|nano|veo|imagen|aqa|banana|lyria|guard|deep-research)/i;
+  const version = (n) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || '0');
+  const tier = (n) => (/flash-lite/.test(n) ? 1 : /flash/.test(n) ? 0 : /pro/.test(n) ? 2 : 3);
+  const preview = (n) => (/(preview|exp|experimental)/.test(n) ? 1 : 0);
+  const alias = (n) => (/latest/.test(n) ? 1 : 0);
+  return [...new Set(names)]
+    .filter((n) => /^gemini-/.test(n) && !bad.test(n) && tier(n) < 3)
+    .sort((a, b) => tier(a) - tier(b) || preview(a) - preview(b) || version(b) - version(a) || alias(a) - alias(b) || a.localeCompare(b));
+}
+
+async function discoverModels(key) {
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000', {
+    headers: { 'x-goog-api-key': key },
+  }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }));
+  if (!res.ok) {
+    const body = (await res.text()).slice(0, 300);
+    if (res.status === 400 || res.status === 403) fail(`${explain(res.status, body)} [models list: HTTP ${res.status} ${body}]`);
+    log(`Could not list models (HTTP ${res.status}); using fallback names`);
+    return [...MODELS];
+  }
+  const json = await res.json();
+  const usable = (json.models || [])
+    .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
+    .map((m) => m.name.replace(/^models\//, ''));
+  const ranked = rankModels(usable);
+  const preferred = (process.env.GEMINI_MODELS || '').split(',').map((s) => s.trim()).filter(Boolean);
+  const list = [...new Set([...preferred, ...ranked])].slice(0, 6);
+  log('Models available for this key (best first):', list.join(', ') || '(none)');
+  if (!list.length) fail('Is key ke saath koi Gemini text model nahi mila. AI Studio mein key ka project check karein.');
+  return list;
+}
 
 async function callGemini(prompt) {
   if (process.env.DRAFT_MOCK) {
@@ -130,29 +168,36 @@ async function callGemini(prompt) {
   }
   const key = process.env.GEMINI_API_KEY;
   if (!key) fail('GEMINI_API_KEY secret nahi mila. GitHub → Settings → Secrets and variables → Actions mein naam bilkul GEMINI_API_KEY rakh kar key save karein.');
+  if (!candidateModels) candidateModels = await discoverModels(key);
   let lastErr = '', lastExplain = '';
-  for (const model of MODELS) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
+  const order = workingModel ? [workingModel, ...candidateModels.filter((m) => m !== workingModel)] : candidateModels;
+  for (const model of order) {
+    let useSchema = true;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const generationConfig = { temperature: 0.6, responseMimeType: 'application/json', ...(useSchema ? { responseSchema: SCHEMA } : {}) };
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM }] },
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.6, responseMimeType: 'application/json', responseSchema: SCHEMA },
+          generationConfig,
         }),
       }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }));
       if (res.ok) {
         const json = await res.json();
         const text = (json.candidates?.[0]?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
-        try { return { model, data: JSON.parse(text) }; }
-        catch { lastErr = `${model}: response was not valid JSON`; break; }
+        const clean = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+        try { const data = JSON.parse(clean); workingModel = model; log(`Model used: ${model}`); return { model, data }; }
+        catch { lastErr = `${model}: response was not valid JSON`; log(lastErr); break; }
       }
       const body = (await res.text()).slice(0, 300);
       lastErr = `${model}: HTTP ${res.status} ${body}`;
       lastExplain = explain(res.status, body);
       log(lastErr);
-      if (res.status === 400 || res.status === 403) fail(`${lastExplain} [${lastErr}]`); // key problem: other models won't help
+      const keyProblem = (res.status === 400 && /API_KEY_INVALID|API key not valid/i.test(body)) || res.status === 401 || res.status === 403;
+      if (keyProblem) fail(`${lastExplain} [${lastErr}]`); // other models won't help
+      if (res.status === 400 && useSchema) { log('Retrying without responseSchema'); useSchema = false; continue; }
       if (res.status === 429 && attempt === 1) { log('Rate limited — waiting 40 s'); await sleep(40000); continue; }
       break; // try next model
     }
