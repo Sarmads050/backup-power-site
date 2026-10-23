@@ -27,7 +27,27 @@ const forcedTopic = args.includes('--topic') ? args[args.indexOf('--topic') + 1]
 const skip = new Set((process.env.SKIP_SLUGS || '').split(',').map((s) => s.trim()).filter(Boolean));
 
 const log = (...m) => console.log('[draft]', ...m);
-const fail = (msg) => { console.error('[draft] ERROR:', msg); process.exit(1); };
+// On GitHub, "::error::" lines show up on the run's Summary page, so the
+// reason is visible without opening the logs.
+const fail = (msg) => {
+  console.error('[draft] ERROR:', msg);
+  if (process.env.GITHUB_ACTIONS) console.log(`::error title=Draft nahi bana::${String(msg).replace(/\r?\n/g, ' ')}`);
+  process.exit(1);
+};
+
+// Plain-language explanation for common Gemini API errors.
+function explain(status, body) {
+  if (status === 400 && /API_KEY_INVALID|API key not valid/i.test(body))
+    return 'GEMINI_API_KEY ghalat hai — AI Studio se nayi key bana kar GitHub secret dobara save karein (poori key copy karein, aage-peeche space na ho).';
+  if (status === 403)
+    return 'Gemini ne key ko ijazat nahi di (403) — AI Studio mein key check karein, ya nayi key banayein.';
+  if (status === 429)
+    return 'Gemini ki free limit abhi poori hai (429) — thori der baad "Re-run jobs" dabayein.';
+  if (status === 404)
+    return 'Yeh Gemini model ab maujood nahi (404) — Claude ko batayein, woh model ka naam update kar dega.';
+  if (status === 0) return 'Gemini tak internet connection nahi bana — thori der baad dobara chalayein.';
+  return `Gemini ne error diya (HTTP ${status}).`;
+}
 
 // ---------- 1. Pick the topic ----------
 const queueFile = JSON.parse(readFileSync(QUEUE_PATH, 'utf8'));
@@ -109,8 +129,8 @@ async function callGemini(prompt) {
     return { model: 'mock', data: JSON.parse(readFileSync(process.env.DRAFT_MOCK, 'utf8')) };
   }
   const key = process.env.GEMINI_API_KEY;
-  if (!key) fail('GEMINI_API_KEY is not set. Add it in GitHub → Settings → Secrets and variables → Actions.');
-  let lastErr = '';
+  if (!key) fail('GEMINI_API_KEY secret nahi mila. GitHub → Settings → Secrets and variables → Actions mein naam bilkul GEMINI_API_KEY rakh kar key save karein.');
+  let lastErr = '', lastExplain = '';
   for (const model of MODELS) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -130,12 +150,14 @@ async function callGemini(prompt) {
       }
       const body = (await res.text()).slice(0, 300);
       lastErr = `${model}: HTTP ${res.status} ${body}`;
+      lastExplain = explain(res.status, body);
       log(lastErr);
+      if (res.status === 400 || res.status === 403) fail(`${lastExplain} [${lastErr}]`); // key problem: other models won't help
       if (res.status === 429 && attempt === 1) { log('Rate limited — waiting 40 s'); await sleep(40000); continue; }
       break; // try next model
     }
   }
-  fail(`All Gemini models failed. Last error: ${lastErr}`);
+  fail(`${lastExplain || 'Gemini ke saare models fail ho gaye.'} [${lastErr}]`);
 }
 
 // ---------- 5. Validate ----------

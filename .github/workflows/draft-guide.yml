@@ -25,8 +25,8 @@ jobs:
   draft:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -93,4 +93,4 @@ jobs:
 
       - name: Report a problem
         if: failure() || steps.draft.outputs.status == 'failed'
-        run: echo "::error::Draft nahi ban saka. Upar 'Write the draft with Gemini' step ka log dekhein ya Claude ko batayein."
+        run: echo "Draft nahi ban saka — wajah upar Summary page par likhi hai."
