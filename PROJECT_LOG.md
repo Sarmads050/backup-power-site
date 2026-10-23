@@ -66,9 +66,22 @@ Har kaam ke baad isay update kiya jata hai.
 **Mobile fix:** guides ki tables chhote phone par page ko chaura nahi karti (sideways scroll).
 **Total:** 25 pages, SEO check 0 errors / 0 warnings.
 
+### 2026-10-23: Weekly auto-draft system
+
+**Kaise chalta hai:**
+1. `.github/workflows/draft-guide.yml` — har **Monday 9:00 AM (Pakistan)**, ya "Run workflow" button se.
+2. `scripts/draft-guide.mjs` — `seo/topic-queue.json` se agla topic leta hai, **Gemini API** se JSON draft likhwata hai (sirf queue ke checked facts + `appliances.json` ke numbers use karne ki ijazat), phir khud check karta hai: title/description lambai, keyword title + description + pehle jumle mein, 850–1,100 words, 5–7 headings, 1 table, koi link/brand nahi. Phir poori site **build + SEO check**. Galti ho to AI ko galti bata kar dobara (3 koshishen).
+3. Pass hone par branch `draft/<slug>` + **Pull Request** (Roman Urdu instructions ke saath). **Merge = live**, Close = kuch nahi.
+4. Jis topic ka PR khula ho, agli dafa woh dobara nahi likha jata.
+
+**Topic queue (8, facts haath se check kiye):** store a power station, window AC, chest freezer, laptop, electric blanket, coffee maker, how long to charge, home backup.
+**Models:** `gemini-2.5-flash` → `gemini-flash-latest` → `gemini-2.5-flash-lite` (GitHub repo variable `GEMINI_MODELS` se badal sakte hain).
+**User ka ek-dafa setup:** `GEMINI_API_KEY` secret + Actions ko PR banane ki ijazat (Settings → Actions → General).
+**Test:** mock jawab se poora flow test kiya (kharab draft ruk gaya, achha draft build + SEO pass, queue update, skip logic).
+
 ## Agla kaam (Next)
 
-1. Auto-draft system (GitHub Actions + AI API): roz/hafte 1 guide ka draft `draft: true` ke saath → user approve kare → live. API key user dega.
+1. Queue mein aur topics (har 2 mahine ~8) — Search Console data aane ke baad usi se.
 2. Aur guides (keyword map pehle): "how long will a power station run a CPAP", "solar generator vs generator", "power station for camping/RV", "how to store a power station"
 3. EV charging section (Autel/EVDANCE affiliate, 8–15%)
 4. Domain ke baad: Search Console, Cloudflare Pages, contact email, AdSense apply, affiliate links (Awin via Payoneer)

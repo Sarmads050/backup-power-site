@@ -1,0 +1,96 @@
+# Har Monday subah (Pakistan 9:00 AM = 04:00 UTC) ek naya guide draft banta hai
+# aur Pull Request ke taur par aata hai. Merge karne par hi live hota hai.
+# "Run workflow" button se kabhi bhi foran bhi chala sakte hain.
+name: Weekly guide draft
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Topic slug (khaali chhodein to list ka agla topic)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: draft-guide
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Find topics that already have an open draft
+        id: open
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          slugs=$(gh pr list --state open --search "head:draft/" --json headRefName --jq '[.[].headRefName | sub("^draft/";"")] | join(",")' || true)
+          echo "skip=$slugs" >> "$GITHUB_OUTPUT"
+          echo "Open drafts: $slugs"
+
+      - name: Write the draft with Gemini
+        id: draft
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODELS: ${{ vars.GEMINI_MODELS }}
+          SKIP_SLUGS: ${{ steps.open.outputs.skip }}
+          DRAFT_TOPIC: ${{ github.event.inputs.topic }}
+          BASE_PATH: /backup-power-site
+        run: node scripts/draft-guide.mjs
+
+      - name: Open a Pull Request for review
+        if: steps.draft.outputs.status == 'ok'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ steps.draft.outputs.slug }}
+          TITLE: ${{ steps.draft.outputs.title }}
+          KEYWORD: ${{ steps.draft.outputs.keyword }}
+          WORDS: ${{ steps.draft.outputs.words }}
+          MODEL: ${{ steps.draft.outputs.model }}
+          REMAINING: ${{ steps.draft.outputs.remaining }}
+        run: |
+          branch="draft/$SLUG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add src/content/guides/"$SLUG".md seo/keywords.json seo/topic-queue.json
+          git commit -m "Draft guide: $TITLE"
+          git push -f origin "$branch"
+          cat > pr-body.md <<EOF
+          ## 📝 Naya guide draft: **$TITLE**
+
+          - Keyword: \`$KEYWORD\`
+          - Lambai: $WORDS words · AI model: $MODEL
+          - SEO check: ✅ pass (build aur keyword checks ho chuke hain)
+          - List mein baqi topics: $REMAINING
+
+          ### Aap ko kya karna hai
+          1. Upar **"Files changed"** tab kholein aur guide parh lein (file ke upar "⋯" → **View file** se saaf dikhegi).
+          2. Theek lage to neeche **"Merge pull request"** → **"Confirm merge"** dabayein. 2–3 minute mein guide live ho jayegi.
+          3. Pasand na aaye to **"Close pull request"** dabayein — kuch live nahi hoga.
+
+          ### Review checklist
+          - [ ] Numbers samajh mein aate hain (koi ajeeb ya bohat bara dawa nahi)
+          - [ ] Koi brand ka naam ya link nahi
+          - [ ] Safety ki baatein theek hain
+
+          > Shak ho to Claude ko likhein: **"draft PR check karo"** — woh facts verify karke theek kar dega.
+          EOF
+          gh pr create --base main --head "$branch" --title "Draft guide: $TITLE" --body-file pr-body.md
+
+      - name: Report a problem
+        if: failure() || steps.draft.outputs.status == 'failed'
+        run: echo "::error::Draft nahi ban saka. Upar 'Write the draft with Gemini' step ka log dekhein ya Claude ko batayein."

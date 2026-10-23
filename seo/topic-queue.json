@@ -1,0 +1,143 @@
+{
+  "_about": "Queue of guides for the weekly auto-draft system (scripts/draft-guide.mjs). The first topic in 'queue' whose guide doesn't exist yet (and has no open draft) is written next. Facts here are checked by hand; the AI may only use these numbers (plus the site's appliance data and simple arithmetic). Add new topics at the end. Finished topics move to 'done'.",
+  "queue": [
+    {
+      "slug": "how-to-store-a-power-station",
+      "keyword": "how to store a portable power station",
+      "question": "How should I store a portable power station between power outages so it is ready and the battery lasts?",
+      "angle": "A practical storage checklist for people who keep a power station for emergencies.",
+      "facts": [
+        "Store it partly charged — often around 50–80% — unless the manual says otherwise.",
+        "Top it up every 3–6 months; all batteries slowly lose charge while stored.",
+        "Keep it in a cool, dry place out of direct sun; avoid hot cars and damp garages.",
+        "Most lithium batteries should not be charged below 32°F (0°C) unless they have built-in heating; capacity also drops in the cold.",
+        "LiFePO4 power stations are commonly rated for about 3,000–4,000 cycles; NMC units about 500–1,000 cycles.",
+        "Charge it fully and test it before storm season by running a lamp or fan from it.",
+        "Keep cables, adapters and the manual stored with it."
+      ],
+      "relatedTools": ["power-station-size", "solar-charging-time"],
+      "relatedGuides": ["lifepo4-vs-lithium-ion-power-station", "watts-vs-watt-hours"]
+    },
+    {
+      "slug": "power-station-for-window-ac",
+      "keyword": "power station to run a window AC",
+      "question": "Can a portable power station run a window air conditioner, and for how long?",
+      "angle": "Honest answer: possible with a big unit, but short runtimes; better cooling options for outages.",
+      "facts": [
+        "A typical 8,000 BTU window AC draws about 700 W running and about 1,800 W for a moment when the compressor starts.",
+        "The compressor cycles; it runs roughly 60% of the time on a hot day.",
+        "Runtime ≈ capacity × 0.85 ÷ watts. At a steady 700 W: 1,000 Wh ≈ 1.2 hours, 2,000 Wh ≈ 2.4 hours, 3,600 Wh ≈ 4.4 hours.",
+        "With the compressor cycling about 60% of the time (average about 420 W): 1,000 Wh ≈ 2 hours, 2,000 Wh ≈ 4 hours, 3,600 Wh ≈ 7.3 hours.",
+        "The power station's surge rating must exceed about 1,800 W and its continuous output must exceed about 700 W.",
+        "A box fan uses about 75 W and a ceiling fan about 60 W — roughly a tenth of a window AC.",
+        "Central air conditioners run on 240 V and cannot be run by most portable power stations.",
+        "Cooling tips: cool one small room, close blinds, run the AC on a higher temperature setting, use fans, add solar during the day."
+      ],
+      "relatedTools": ["power-station-size", "appliance-wattage"],
+      "relatedGuides": ["power-station-space-heater", "watts-vs-watt-hours"]
+    },
+    {
+      "slug": "power-station-for-chest-freezer",
+      "keyword": "power station for a chest freezer",
+      "question": "What size power station do I need to run a chest freezer during a power outage?",
+      "angle": "Chest freezers are one of the most battery-friendly big appliances; show sizing and how long food stays frozen.",
+      "facts": [
+        "A typical chest freezer draws about 100 W while running and about 800 W for a moment when the compressor starts.",
+        "The compressor runs roughly 40% of the time, so daily use is about 100 × 24 × 0.4 = 960 Wh.",
+        "Sizing: 960 Wh ÷ 0.85 × 1.2 ≈ 1,400 Wh for one day.",
+        "Runtime at an average of about 40 W: 1,000 Wh ≈ 21 hours, 2,000 Wh ≈ 42 hours, 3,600 Wh ≈ 76 hours.",
+        "USDA guidance: a full freezer holds its temperature about 48 hours (about 24 hours if half full) if the door stays closed.",
+        "Chest freezers lose less cold air when opened than upright freezers because cold air sinks.",
+        "Tips: keep it full (add jugs of water), keep the lid closed, run it in bursts while checking temperature with a thermometer, keep it in a cool place."
+      ],
+      "relatedTools": ["power-station-size", "appliance-wattage"],
+      "relatedGuides": ["power-station-for-refrigerator", "power-station-for-12v-fridge"]
+    },
+    {
+      "slug": "power-station-for-laptop",
+      "keyword": "power station for a laptop",
+      "question": "How long will a portable power station run or charge a laptop?",
+      "angle": "Remote work during outages and travel; why USB-C is more efficient than the AC outlet.",
+      "facts": [
+        "A typical laptop uses about 60 W while working; a desktop PC with monitor about 250 W.",
+        "Runtime from the AC outlet ≈ capacity × 0.85 ÷ watts. At 60 W: 300 Wh ≈ 4 hours, 500 Wh ≈ 7 hours, 1,000 Wh ≈ 14 hours.",
+        "Charging over USB-C Power Delivery skips the inverter and is more efficient (about 90%): 500 Wh ≈ 7.5 hours at 60 W.",
+        "Check the USB-C port's wattage (for example 60 W or 100 W) is at least your laptop charger's rating.",
+        "A Wi-Fi router and modem uses about 20 W; add it to your total if you need internet.",
+        "Switch off the AC inverter when not needed — it uses power even with nothing plugged in.",
+        "US airlines commonly allow lithium batteries up to 100 Wh in carry-on without approval; most power stations are larger — check the airline's rules."
+      ],
+      "relatedTools": ["power-station-size", "appliance-wattage"],
+      "relatedGuides": ["power-station-for-starlink", "watts-vs-watt-hours"]
+    },
+    {
+      "slug": "power-station-for-electric-blanket",
+      "keyword": "power station for an electric blanket",
+      "question": "How long will a power station run an electric blanket or heated mattress pad?",
+      "angle": "The most battery-friendly way to stay warm in a winter outage or cold camping night.",
+      "facts": [
+        "Electric blankets and heated mattress pads typically use about 50–100 W.",
+        "A 100 W blanket for 8 hours uses about 800 Wh; a 50 W blanket about 400 Wh.",
+        "Runtime ≈ capacity × 0.85 ÷ watts. At 100 W: 500 Wh ≈ 4 hours, 1,000 Wh ≈ 8.5 hours, 2,000 Wh ≈ 17 hours. At 50 W: double those times.",
+        "Most blankets have heat settings and timers; lower settings and pre-warming the bed then switching to low stretch the battery.",
+        "A 1,500 W space heater drains a 1,000 Wh power station in about 34 minutes — roughly 15 times faster than a 100 W blanket.",
+        "Safety: follow the blanket's instructions, don't fold or bunch it while on, and don't use damaged blankets.",
+        "Some 12 V heated blankets can run from the power station's 12 V port, which is more efficient than AC."
+      ],
+      "relatedTools": ["power-station-size", "appliance-wattage"],
+      "relatedGuides": ["power-station-space-heater", "power-station-for-diesel-heater"]
+    },
+    {
+      "slug": "power-station-for-coffee-maker",
+      "keyword": "power station to run a coffee maker",
+      "question": "Can a portable power station run a coffee maker, and how much battery does it use?",
+      "angle": "Morning coffee during an outage or at camp: output matters more than capacity.",
+      "facts": [
+        "A drip coffee maker uses about 900 W while brewing; an electric kettle about 1,500 W.",
+        "A 12-minute brew at 900 W uses about 180 Wh, or about 210 Wh from the battery after inverter loss.",
+        "Boiling a kettle for about 6 minutes at 1,500 W uses about 150 Wh, or about 175 Wh from the battery.",
+        "The power station's continuous output must be above the appliance's watts with headroom: about 1,100 W or more for a 900 W coffee maker, about 1,800 W for a 1,500 W kettle.",
+        "Keeping the coffee maker's hot plate on keeps drawing power; pour the coffee into a thermos instead.",
+        "Manual options (pour-over with kettle-boiled water, French press) use only the kettle's energy.",
+        "Avoid running the coffee maker at the same moment a fridge compressor starts if the power station is near its output limit."
+      ],
+      "relatedTools": ["power-station-size", "appliance-wattage"],
+      "relatedGuides": ["power-station-for-microwave", "power-station-for-camping"]
+    },
+    {
+      "slug": "how-long-to-charge-a-power-station",
+      "keyword": "how long to charge a power station",
+      "question": "How long does it take to charge a portable power station from the wall, a car or solar?",
+      "angle": "Simple formula and examples for each charging method.",
+      "facts": [
+        "Charging time ≈ energy to add (Wh) ÷ charging input (W) ÷ about 0.9 for charging losses.",
+        "Example from the wall: adding 1,000 Wh at 500 W of AC input ≈ 2.2 hours; at 1,000 W ≈ 1.1 hours. Many units slow down near 100%.",
+        "Car 12 V sockets typically supply about 100–120 W: adding 1,000 Wh takes roughly 9–11 hours of driving (1,000 ÷ 120 ÷ 0.9 ≈ 9.3; 1,000 ÷ 100 ÷ 0.9 ≈ 11.1).",
+        "Solar: real panel output is about 75% of the rating; a 200 W panel in 5 good sun hours adds about 675–750 Wh a day.",
+        "The power station's maximum AC and solar input ratings (in watts) are on the spec sheet and set the fastest possible charge.",
+        "Charging from 20% to 80% is faster than 0–100% because charging slows at the top.",
+        "Don't charge most lithium batteries below 32°F (0°C) unless the unit has battery heating."
+      ],
+      "relatedTools": ["solar-charging-time", "power-station-size"],
+      "relatedGuides": ["power-station-for-camping", "how-to-store-a-power-station"]
+    },
+    {
+      "slug": "power-station-for-home-backup",
+      "keyword": "power station for home backup",
+      "question": "Can a portable power station back up my home during a power outage, and what can it realistically run?",
+      "angle": "What a portable power station can and can't do for home backup; essentials-first planning.",
+      "facts": [
+        "Essentials and typical figures: full-size fridge about 1,100–1,900 Wh a day; Wi-Fi router about 20 W (480 Wh a day); LED bulb about 10 W; phone charging about 15 W; CPAP about 30–60 W without humidifier; sump pump (1/3 HP) about 800 W running, 1,300 W starting.",
+        "Fridge + 4 LED bulbs for 5 hours + router + 2 phones uses about 2,300 Wh a day; with losses and buffer that is about 3,300 Wh for one day.",
+        "Most portable power stations output 120 V only; central AC, electric dryers, ovens and many well pumps run on 240 V.",
+        "Connecting a power station to home wiring requires a proper transfer switch or inlet installed by a licensed electrician; never backfeed through an outlet.",
+        "Expandable systems accept extra battery packs; adding solar recharges during multi-day outages.",
+        "Battery power stations make no fumes and can be used indoors, unlike gas generators.",
+        "Plan essentials first: food cold, communication, light, medical devices, flood protection."
+      ],
+      "relatedTools": ["power-station-size", "generator-vs-power-station-cost"],
+      "relatedGuides": ["power-station-for-refrigerator", "power-station-for-sump-pump"]
+    }
+  ],
+  "done": []
+}
