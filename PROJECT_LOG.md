@@ -68,7 +68,7 @@ Har kaam ke baad isay update kiya jata hai.
 
 ### 2026-10-23: Weekly auto-draft system
 
-**Update (same day):** Gemini key ke Google project ka **prepaid balance $0** tha → har model par HTTP 402 ("prepayment credits are depleted"). Google docs: $0 balance par us billing account ki saari keys band. Isliye `scripts/ai-providers.mjs` banaya: **Gemini → Groq → OpenRouter (:free models)** — jo key ho aur kaam kare. Har provider ke models live list se chune jaate hain. Secrets: `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY` (kam az kam ek).
+**Update (same day):** Gemini key ke Google project ka **prepaid balance $0** tha → har model par HTTP 402 ("prepayment credits are depleted"). Google docs: $0 balance par us billing account ki saari keys band. Isliye `scripts/ai-providers.mjs` banaya: **Gemini → Groq → OpenRouter (:free models)** — jo key ho aur kaam kare. Har provider ke models live list se chune jaate hain. Secrets: `GEMINI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, `CEREBRAS_API_KEY`, `OPENROUTER_API_KEY` (kam az kam ek). Tarteeb: Gemini → Groq → Mistral → Cerebras → OpenRouter. Note: GitHub Models 30 July 2026 ko band ho gaya, isliye shamil nahi.
 
 **Kaise chalta hai:**
 1. `.github/workflows/draft-guide.yml` — har **Monday 9:00 AM (Pakistan)**, ya "Run workflow" button se.

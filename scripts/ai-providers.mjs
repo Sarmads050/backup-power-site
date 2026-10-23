@@ -1,12 +1,14 @@
 // Talks to AI providers for the auto-draft system. Tries each provider whose
-// key is set, in order: Gemini → Groq → OpenRouter. If one fails (no credit,
+// key is set, in order: Gemini → Groq → Mistral → Cerebras → OpenRouter. If one fails (no credit,
 // rate limit, retired model…), it moves on to the next one automatically.
 //
 // Keys (GitHub → Settings → Secrets and variables → Actions):
 //   GEMINI_API_KEY      Google AI Studio
 //   GROQ_API_KEY        console.groq.com (free tier)
+//   MISTRAL_API_KEY     console.mistral.ai ("Experiment" free plan)
+//   CEREBRAS_API_KEY    cloud.cerebras.ai (free tier)
 //   OPENROUTER_API_KEY  openrouter.ai (free ":free" models)
-// Optional repo variables: GEMINI_MODELS, GROQ_MODELS, OPENROUTER_MODELS (comma lists tried first)
+// Optional repo variables: GEMINI_MODELS, GROQ_MODELS, MISTRAL_MODELS, CEREBRAS_MODELS, OPENROUTER_MODELS
 
 const log = (...m) => console.log('[ai]', ...m);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -115,6 +117,25 @@ const OPENAI_STYLE = {
     skip: /(whisper|tts|guard|embed|vision|playai|orpheus|compound|prompt-guard|distil|8b|instant)/i,
     headers: {},
   },
+  mistral: {
+    label: 'Mistral',
+    keyEnv: 'MISTRAL_API_KEY',
+    base: 'https://api.mistral.ai/v1',
+    modelsEnv: 'MISTRAL_MODELS',
+    prefer: [/^mistral-large-latest$/, /^mistral-medium-latest$/, /^mistral-large/, /^mistral-medium/, /^mistral-small-latest$/, /^mistral-small/],
+    skip: /(embed|moderation|ocr|codestral|devstral|pixtral|voxtral|ministral|saba|magistral)/i,
+    requirePrefer: true,
+    headers: {},
+  },
+  cerebras: {
+    label: 'Cerebras',
+    keyEnv: 'CEREBRAS_API_KEY',
+    base: 'https://api.cerebras.ai/v1',
+    modelsEnv: 'CEREBRAS_MODELS',
+    prefer: [/gpt-oss-120b/, /qwen-3-235b/, /llama-3\.3-70b/, /zai-glm/, /llama-4/, /qwen-3-32b/],
+    skip: /(8b|embed)/i,
+    headers: {},
+  },
   openrouter: {
     label: 'OpenRouter',
     keyEnv: 'OPENROUTER_API_KEY',
@@ -130,7 +151,7 @@ const OPENAI_STYLE = {
 function rankOpenAIStyle(cfg, ids) {
   const score = (id) => { const i = cfg.prefer.findIndex((re) => re.test(id)); return i < 0 ? 99 : i; };
   return ids
-    .filter((id) => !cfg.skip.test(id) && (!cfg.onlyFree || /:free$/.test(id)))
+    .filter((id) => !cfg.skip.test(id) && (!cfg.onlyFree || /:free$/.test(id)) && (!cfg.requirePrefer || score(id) < 99))
     .sort((a, b) => score(a) - score(b) || a.localeCompare(b));
 }
 
@@ -190,6 +211,8 @@ async function openAIStyle(name, { system, prompt }) {
 const PROVIDERS = [
   { name: 'gemini', keyEnv: 'GEMINI_API_KEY', run: gemini },
   { name: 'groq', keyEnv: 'GROQ_API_KEY', run: (a) => openAIStyle('groq', a) },
+  { name: 'mistral', keyEnv: 'MISTRAL_API_KEY', run: (a) => openAIStyle('mistral', a) },
+  { name: 'cerebras', keyEnv: 'CEREBRAS_API_KEY', run: (a) => openAIStyle('cerebras', a) },
   { name: 'openrouter', keyEnv: 'OPENROUTER_API_KEY', run: (a) => openAIStyle('openrouter', a) },
 ];
 
@@ -203,7 +226,7 @@ let preferred = ''; // provider that worked last time in this run
 export async function askAI({ system, prompt, schema }) {
   const available = PROVIDERS.filter((p) => process.env[p.keyEnv]);
   if (!available.length) {
-    throw new Error('Koi AI key nahi mili. GitHub secrets mein GEMINI_API_KEY, GROQ_API_KEY ya OPENROUTER_API_KEY mein se kam az kam ek daalein.');
+    throw new Error('Koi AI key nahi mili. GitHub secrets mein GEMINI_API_KEY, GROQ_API_KEY, MISTRAL_API_KEY, CEREBRAS_API_KEY ya OPENROUTER_API_KEY mein se kam az kam ek daalein.');
   }
   const order = preferred ? [...available.filter((p) => p.name === preferred), ...available.filter((p) => p.name !== preferred)] : available;
   const problems = [];
