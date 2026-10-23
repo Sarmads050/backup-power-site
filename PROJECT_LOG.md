@@ -68,6 +68,8 @@ Har kaam ke baad isay update kiya jata hai.
 
 ### 2026-10-23: Weekly auto-draft system
 
+**Update (same day):** Gemini key ke Google project ka **prepaid balance $0** tha → har model par HTTP 402 ("prepayment credits are depleted"). Google docs: $0 balance par us billing account ki saari keys band. Isliye `scripts/ai-providers.mjs` banaya: **Gemini → Groq → OpenRouter (:free models)** — jo key ho aur kaam kare. Har provider ke models live list se chune jaate hain. Secrets: `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY` (kam az kam ek).
+
 **Kaise chalta hai:**
 1. `.github/workflows/draft-guide.yml` — har **Monday 9:00 AM (Pakistan)**, ya "Run workflow" button se.
 2. `scripts/draft-guide.mjs` — `seo/topic-queue.json` se agla topic leta hai, **Gemini API** se JSON draft likhwata hai (sirf queue ke checked facts + `appliances.json` ke numbers use karne ki ijazat), phir khud check karta hai: title/description lambai, keyword title + description + pehle jumle mein, 850–1,100 words, 5–7 headings, 1 table, koi link/brand nahi. Phir poori site **build + SEO check**. Galti ho to AI ko galti bata kar dobara (3 koshishen).

@@ -41,11 +41,15 @@ jobs:
           echo "skip=$slugs" >> "$GITHUB_OUTPUT"
           echo "Open drafts: $slugs"
 
-      - name: Write the draft with Gemini
+      - name: Write the draft with AI (Gemini, Groq or OpenRouter)
         id: draft
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           GEMINI_MODELS: ${{ vars.GEMINI_MODELS }}
+          GROQ_MODELS: ${{ vars.GROQ_MODELS }}
+          OPENROUTER_MODELS: ${{ vars.OPENROUTER_MODELS }}
           SKIP_SLUGS: ${{ steps.open.outputs.skip }}
           DRAFT_TOPIC: ${{ github.event.inputs.topic }}
           BASE_PATH: /backup-power-site

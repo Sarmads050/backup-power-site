@@ -1,4 +1,4 @@
-// Weekly auto-draft: writes ONE new guide with Google Gemini, checks it, and
+// Weekly auto-draft: writes ONE new guide with AI (Gemini, Groq or OpenRouter), checks it, and
 // leaves it ready for a human to approve (the GitHub workflow opens a Pull
 // Request — nothing goes live until it is merged).
 //
@@ -7,19 +7,18 @@
 //   DRAFT_MOCK=path/to/response.json node scripts/draft-guide.mjs   (test without an API key)
 //
 // Env:
-//   GEMINI_API_KEY   required unless DRAFT_MOCK is set
-//   GEMINI_MODELS    comma list tried in order (default below)
+//   GEMINI_API_KEY / GROQ_API_KEY / OPENROUTER_API_KEY   at least one (unless DRAFT_MOCK)
+//   GEMINI_MODELS / GROQ_MODELS / OPENROUTER_MODELS      optional model names tried first
 //   SKIP_SLUGS       comma list of slugs that already have an open draft PR
 //   GITHUB_OUTPUT    set by GitHub Actions; we write slug/title/etc. there
 import { readFileSync, writeFileSync, existsSync, appendFileSync, unlinkSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { askAI } from './ai-providers.mjs';
 
 const QUEUE_PATH = 'seo/topic-queue.json';
 const KEYWORDS_PATH = 'seo/keywords.json';
 const GUIDES_DIR = 'src/content/guides';
 const MAX_ATTEMPTS = 3;
-const MODELS = (process.env.GEMINI_MODELS || 'gemini-flash-latest,gemini-flash-lite-latest')
-  .split(',').map((s) => s.trim()).filter(Boolean);
 const SITE_NAME = 'BackupWatts';
 
 const args = process.argv.slice(2);
@@ -34,20 +33,6 @@ const fail = (msg) => {
   if (process.env.GITHUB_ACTIONS) console.log(`::error title=Draft nahi bana::${String(msg).replace(/\r?\n/g, ' ')}`);
   process.exit(1);
 };
-
-// Plain-language explanation for common Gemini API errors.
-function explain(status, body) {
-  if (status === 400 && /API_KEY_INVALID|API key not valid/i.test(body))
-    return 'GEMINI_API_KEY ghalat hai — AI Studio se nayi key bana kar GitHub secret dobara save karein (poori key copy karein, aage-peeche space na ho).';
-  if (status === 403)
-    return 'Gemini ne key ko ijazat nahi di (403) — AI Studio mein key check karein, ya nayi key banayein.';
-  if (status === 429)
-    return 'Gemini ki free limit abhi poori hai (429) — thori der baad "Re-run jobs" dabayein.';
-  if (status === 404)
-    return 'Yeh Gemini model ab maujood nahi (404) — Claude ko batayein, woh model ka naam update kar dega.';
-  if (status === 0) return 'Gemini tak internet connection nahi bana — thori der baad dobara chalayein.';
-  return `Gemini ne error diya (HTTP ${status}).`;
-}
 
 // ---------- 1. Pick the topic ----------
 const queueFile = JSON.parse(readFileSync(QUEUE_PATH, 'utf8'));
@@ -120,89 +105,17 @@ const SCHEMA = {
   required: ['title', 'description', 'summary', 'answer', 'faqs', 'body'],
 };
 
-// ---------- 4. Call Gemini ----------
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let candidateModels = null; // filled from Google's live model list
-let workingModel = '';
-
-// Google renames/retires models often, so instead of hard-coding names we ask
-// the API which models this key can use right now and pick the best text
-// "Flash" model (fast, free-tier friendly). GEMINI_MODELS, if set, goes first.
-export function rankModels(names) {
-  const bad = /(image|tts|audio|live|embed|vision|robotics|computer|native|learnlm|gemma|nano|veo|imagen|aqa|banana|lyria|guard|deep-research)/i;
-  const version = (n) => parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/) || [])[1] || '0');
-  const tier = (n) => (/flash-lite/.test(n) ? 1 : /flash/.test(n) ? 0 : /pro/.test(n) ? 2 : 3);
-  const preview = (n) => (/(preview|exp|experimental)/.test(n) ? 1 : 0);
-  const alias = (n) => (/latest/.test(n) ? 1 : 0);
-  return [...new Set(names)]
-    .filter((n) => /^gemini-/.test(n) && !bad.test(n) && tier(n) < 3)
-    .sort((a, b) => tier(a) - tier(b) || preview(a) - preview(b) || version(b) - version(a) || alias(a) - alias(b) || a.localeCompare(b));
-}
-
-async function discoverModels(key) {
-  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000', {
-    headers: { 'x-goog-api-key': key },
-  }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }));
-  if (!res.ok) {
-    const body = (await res.text()).slice(0, 300);
-    if (res.status === 400 || res.status === 403) fail(`${explain(res.status, body)} [models list: HTTP ${res.status} ${body}]`);
-    log(`Could not list models (HTTP ${res.status}); using fallback names`);
-    return [...MODELS];
-  }
-  const json = await res.json();
-  const usable = (json.models || [])
-    .filter((m) => (m.supportedGenerationMethods || []).includes('generateContent'))
-    .map((m) => m.name.replace(/^models\//, ''));
-  const ranked = rankModels(usable);
-  const preferred = (process.env.GEMINI_MODELS || '').split(',').map((s) => s.trim()).filter(Boolean);
-  const list = [...new Set([...preferred, ...ranked])].slice(0, 6);
-  log('Models available for this key (best first):', list.join(', ') || '(none)');
-  if (!list.length) fail('Is key ke saath koi Gemini text model nahi mila. AI Studio mein key ka project check karein.');
-  return list;
-}
-
+// ---------- 4. Call the AI (Gemini → Groq → OpenRouter, see ai-providers.mjs) ----------
 async function callGemini(prompt) {
   if (process.env.DRAFT_MOCK) {
     log('Using mock response', process.env.DRAFT_MOCK);
     return { model: 'mock', data: JSON.parse(readFileSync(process.env.DRAFT_MOCK, 'utf8')) };
   }
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) fail('GEMINI_API_KEY secret nahi mila. GitHub → Settings → Secrets and variables → Actions mein naam bilkul GEMINI_API_KEY rakh kar key save karein.');
-  if (!candidateModels) candidateModels = await discoverModels(key);
-  let lastErr = '', lastExplain = '';
-  const order = workingModel ? [workingModel, ...candidateModels.filter((m) => m !== workingModel)] : candidateModels;
-  for (const model of order) {
-    let useSchema = true;
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      const generationConfig = { temperature: 0.6, responseMimeType: 'application/json', ...(useSchema ? { responseSchema: SCHEMA } : {}) };
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig,
-        }),
-      }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }));
-      if (res.ok) {
-        const json = await res.json();
-        const text = (json.candidates?.[0]?.content?.parts || []).filter((p) => !p.thought).map((p) => p.text || '').join('');
-        const clean = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
-        try { const data = JSON.parse(clean); workingModel = model; log(`Model used: ${model}`); return { model, data }; }
-        catch { lastErr = `${model}: response was not valid JSON`; log(lastErr); break; }
-      }
-      const body = (await res.text()).slice(0, 300);
-      lastErr = `${model}: HTTP ${res.status} ${body}`;
-      lastExplain = explain(res.status, body);
-      log(lastErr);
-      const keyProblem = (res.status === 400 && /API_KEY_INVALID|API key not valid/i.test(body)) || res.status === 401 || res.status === 403;
-      if (keyProblem) fail(`${lastExplain} [${lastErr}]`); // other models won't help
-      if (res.status === 400 && useSchema) { log('Retrying without responseSchema'); useSchema = false; continue; }
-      if (res.status === 429 && attempt === 1) { log('Rate limited — waiting 40 s'); await sleep(40000); continue; }
-      break; // try next model
-    }
+  try {
+    return await askAI({ system: SYSTEM, prompt, schema: SCHEMA });
+  } catch (e) {
+    fail(e.message);
   }
-  fail(`${lastExplain || 'Gemini ke saare models fail ho gaye.'} [${lastErr}]`);
 }
 
 // ---------- 5. Validate ----------
